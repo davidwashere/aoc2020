@@ -2,22 +2,12 @@ package util
 
 import "fmt"
 
-// Grid representation that supports negative (and positive) indexes
-//
-// zero is considered a positive value
+// Grid represents an infinitly growable (memory dependeant) grid of both positive
+// and negative coords with string values
 //
 type Grid struct {
-	// Top Left  (negative X and positive Y: -x,  y)
-	dataTL [][]string
-
-	// Top Right (postiive X and positive Y:  x,  y)
-	dataTR [][]string
-
-	// Bot Left  (negative X and negative Y: -x, -y)
-	dataBL [][]string
-
-	// Bot Right (postiive X and negative Y:  x, -y)
-	dataBR [][]string
+	// All the data points
+	data map[int]map[int]string
 
 	// Default value
 	def string
@@ -38,6 +28,7 @@ func NewGrid(defaultValue string) Grid {
 	minInt := -maxInt - 1
 
 	return Grid{
+		data: map[int]map[int]string{},
 		def:  defaultValue,
 		maxX: minInt,
 		minX: maxInt,
@@ -71,8 +62,6 @@ func NewGridFromFile(filename string, defaultValue string) Grid {
 
 // Set .
 func (g *Grid) Set(x, y int, val string) {
-	data := g.getData(x, y)
-
 	if x < g.minX {
 		g.minX = x
 	}
@@ -89,26 +78,15 @@ func (g *Grid) Set(x, y int, val string) {
 		g.maxY = y
 	}
 
-	x = abs(x)
-	y = abs(y)
+	data := g.data
 
-	maxX := len(*data) - 1
-	if x > maxX {
-		for i := 0; i < (x - maxX); i++ {
-			*data = append(*data, []string{})
-		}
-	}
-
-	maxY := len((*data)[x]) - 1
-	if y > maxY {
-		for i := 0; i < (y - maxY); i++ {
-			(*data)[x] = append((*data)[x], g.def)
-		}
+	// If the X coord not found in map, it doesn't exist
+	if _, ok := data[x]; !ok {
+		data[x] = map[int]string{}
 	}
 
 	// go requires a dereference in parenthesis
-	(*data)[x][y] = val
-
+	data[x][y] = val
 	g.initialized = true
 }
 
@@ -118,20 +96,17 @@ func (g *Grid) Get(x, y int) string {
 		return g.def
 	}
 
-	data := g.getData(x, y)
+	data := g.data
 
-	x = abs(x)
-	y = abs(y)
-
-	if x > len(*data)-1 {
+	if _, ok := data[x]; !ok {
 		return g.def
 	}
 
-	if y > len((*data)[x])-1 {
+	if _, ok := data[x][y]; !ok {
 		return g.def
 	}
 
-	return (*data)[x][y]
+	return data[x][y]
 }
 
 // Height returns the full height of the grid taking into account negative coords
@@ -140,7 +115,7 @@ func (g *Grid) Height() int {
 		return 0
 	}
 
-	return abs(g.minY) + abs(g.maxY) + 1
+	return Abs(g.minY) + Abs(g.maxY) + 1
 }
 
 // Width returns the full width of the grid taking into account negative coords
@@ -149,7 +124,7 @@ func (g *Grid) Width() int {
 		return 0
 	}
 
-	return abs(g.minX) + abs(g.maxX) + 1
+	return Abs(g.minX) + Abs(g.maxX) + 1
 }
 
 // GetRow returns the full row of the given y coord, the returned data will include
@@ -182,13 +157,20 @@ func (g *Grid) Dump() {
 			fmt.Printf(" ")
 		}
 	}
+	fmt.Println()
+
+	fmt.Printf("  \u250c") // Top left
+	for x := g.minX; x <= g.maxX; x++ {
+		fmt.Printf("\u2500")
+	}
+	fmt.Printf("\u2510") // Top right
 
 	for y := g.maxY; y >= g.minY; y-- {
 		fmt.Println()
 		if y == 0 {
-			fmt.Printf("0 ")
+			fmt.Printf("0 \u2502")
 		} else {
-			fmt.Printf("  ")
+			fmt.Printf("  \u2502")
 		}
 
 		for x := g.minX; x <= g.maxX; x++ {
@@ -197,49 +179,16 @@ func (g *Grid) Dump() {
 				val = " "
 			}
 			fmt.Print(val)
+			if x == g.maxX {
+				fmt.Print("\u2502")
+			}
 		}
 	}
 	fmt.Println()
-}
-
-func (g *Grid) getData(x, y int) *[][]string {
-	posX := true
-	if x < 0 {
-		posX = false
+	fmt.Printf("  \u2514") // Bot left
+	for x := g.minX; x <= g.maxX; x++ {
+		fmt.Printf("\u2500")
 	}
-
-	posY := true
-	if y < 0 {
-		posY = false
-	}
-
-	// Top Left
-	if !posX && posY {
-		return &g.dataTL
-	}
-
-	// Top Right
-	if posX && posY {
-		return &g.dataTR
-	}
-
-	// Bottom Left
-	if !posX && !posY {
-		return &g.dataBL
-	}
-
-	// Bottom Right
-	// if posX && !posY {
-	return &g.dataBR
-	// }
-
-	// return nil
-}
-
-// Abs returns the absolute value of x.
-func abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
+	fmt.Printf("\u2518") // Bot right
+	fmt.Println()
 }

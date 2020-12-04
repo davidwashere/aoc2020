@@ -124,25 +124,13 @@ func TestWidth(t *testing.T) {
 	}
 }
 
-func TestAbs(t *testing.T) {
-	want := 2
-	got := abs(-2)
+func TestDump(t *testing.T) {
+	g := NewGrid(".")
+	g.Set(0, 0, "A")
+	g.Set(1, 1, "C")
+	g.Set(-1, -1, "B")
+	g.Set(-1, 1, "D")
 
-	if want != got {
-		t.Errorf("Expected %v but got %v", want, got)
-	}
+	g.Dump()
 
-	want = 9
-	got = abs(9)
-
-	if want != got {
-		t.Errorf("Expected %v but got %v", want, got)
-	}
-
-	want = 0
-	got = abs(0)
-
-	if want != got {
-		t.Errorf("Expected %v but got %v", want, got)
-	}
 }

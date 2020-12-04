@@ -39,7 +39,7 @@ func part1(inputfile string) int {
 			passports = append(passports, passport)
 			passport = NewPassport()
 
-			fmt.Println()
+			// fmt.Println()
 			continue
 		}
 
@@ -48,10 +48,10 @@ func part1(inputfile string) int {
 			itemSplit := strings.Split(item, ":")
 			key := itemSplit[0]
 			val := itemSplit[1]
-			fmt.Println(key)
+			// fmt.Println(key)
 			passport.fields[key] = val
 		}
-		fmt.Println(passport)
+		// fmt.Println(passport)
 	}
 
 	passports = append(passports, passport)
@@ -59,15 +59,7 @@ func part1(inputfile string) int {
 	valid := 0
 	for _, p := range passports {
 		fmt.Printf("%+v\n", p)
-		missing := false
-		for _, want := range keysWanted {
-			if _, ok := p.fields[want]; !ok {
-				missing = true
-				break
-			}
-		}
-
-		if !missing {
+		if util.AllInMap(keysWanted, p.fields) {
 			valid++
 		}
 	}
@@ -76,35 +68,10 @@ func part1(inputfile string) int {
 }
 
 func isValid(passport Passport) bool {
-	keysWanted := []string{
-		"byr",
-		"iyr",
-		"eyr",
-		"hgt",
-		"hcl",
-		"ecl",
-		"pid",
-	}
+	keysWanted := []string{"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"}
+	eyesWanted := []string{"amb", "blu", "brn", "gry", "grn", "hzl", "oth"}
 
-	eyesWanted := []string{
-		"amb",
-		"blu",
-		"brn",
-		"gry",
-		"grn",
-		"hzl",
-		"oth",
-	}
-
-	missing := false
-	for _, want := range keysWanted {
-		if _, ok := passport.fields[want]; !ok {
-			missing = true
-			break
-		}
-	}
-
-	if missing {
+	if !util.AllInMap(keysWanted, passport.fields) {
 		return false
 	}
 
@@ -146,19 +113,12 @@ func isValid(passport Passport) bool {
 		return false
 	}
 	val = strings.TrimPrefix(val, "#")
-	_, err = strconv.ParseUint(val, 16, 64)
-	if err != nil {
+	if !util.IsHex(val) {
 		return false
 	}
 
-	found := false
 	val = passport.fields["ecl"]
-	for _, want := range eyesWanted {
-		if want == val {
-			found = true
-		}
-	}
-	if !found {
+	if !util.IsIn(eyesWanted, val) {
 		return false
 	}
 
