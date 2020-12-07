@@ -6,16 +6,25 @@ import (
 	"strings"
 )
 
+type rule struct {
+	bagName string
+	bags    []baggy
+}
+
 type baggy struct {
 	name string
 	num  int
 }
 
-func parseBagContains(contains string) []baggy {
+func parseRule(line string) rule {
+	lineSplit := strings.Split(line, "bags contain")
+	bagName := strings.TrimSpace(lineSplit[0])
+	contains := strings.TrimSpace(lineSplit[1])
+
 	bags := []baggy{}
 
 	if strings.HasPrefix(contains, "no") {
-		return bags
+		return rule{bagName, bags}
 	}
 
 	canHoldS := strings.Split(contains, ",")
@@ -32,53 +41,28 @@ func parseBagContains(contains string) []baggy {
 		bags = append(bags, bag)
 	}
 
-	return bags
+	return rule{bagName, bags}
 }
 
 func part1(inputfile string) int {
 	data, err := util.ReadFileToStringSlice(inputfile)
 	util.Check(err)
 
-	bagsThatHold := map[string][]string{} // a map of bag names to the list of other bags which hold this bag name
+	r := util.NewRelationator()
+
 	for _, line := range data {
 		if strings.HasPrefix(line, "shiny gold") {
 			continue
 		}
 
-		lineSplit := strings.Split(line, "bags contain")
-		bagName := strings.TrimSpace(lineSplit[0])
-		contains := strings.TrimSpace(lineSplit[1])
-
-		bags := parseBagContains(contains)
-
-		for _, bag := range bags {
-			bagsThatHold[bag.name] = append(bagsThatHold[bag.name], bagName)
+		rule := parseRule(line)
+		for _, bag := range rule.bags {
+			// r.AddParent(bag.name, rule.bagName)
+			r.AddChild(rule.bagName, bag.name)
 		}
 	}
 
-	result := 0
-	processList := []string{}
-	alreadyProcessed := map[string]bool{}
-	processList = append(processList, bagsThatHold["shiny gold"]...)
-	alreadyProcessed["shiny gold"] = true
-
-	for len(processList) > 0 {
-		result++
-		bagName := processList[0]
-		processList = processList[1:]
-
-		alreadyProcessed[bagName] = true // the bag being processed doesn't need to be reprocessed
-		for _, canContainMe := range bagsThatHold[bagName] {
-			if _, ok := alreadyProcessed[canContainMe]; !ok {
-				if util.IsIn(processList, canContainMe) {
-					continue
-				}
-
-				processList = append(processList, canContainMe)
-			}
-		}
-	}
-
+	result := len(r.GetAllUniqueParents("shiny gold"))
 	return result
 }
 
@@ -86,35 +70,18 @@ func part2(inputfile string) int {
 	data, err := util.ReadFileToStringSlice(inputfile)
 	util.Check(err)
 
-	bagsIHold := map[string][]baggy{}
+	r := util.NewRelationator()
 	for _, line := range data {
-		lineSplit := strings.Split(line, "bags contain")
-		bagName := strings.TrimSpace(lineSplit[0])
-		contains := strings.TrimSpace(lineSplit[1])
+		rule := parseRule(line)
 
-		bags := parseBagContains(contains)
-		bagsIHold[bagName] = append(bagsIHold[bagName], bags...)
-	}
-
-	result := 0
-	processList := []baggy{}
-	processList = append(processList, baggy{"shiny gold", 0})
-
-	for len(processList) > 0 {
-		curBag := processList[0]
-		processList = processList[1:]
-
-		if curBag.name != "shiny gold" {
-			result++
-		}
-
-		for _, heldBag := range bagsIHold[curBag.name] {
-			for i := 0; i < heldBag.num; i++ {
-				processList = append(processList, heldBag)
+		for _, bag := range rule.bags {
+			for i := 0; i < bag.num; i++ {
+				r.AddChild(rule.bagName, bag.name)
 			}
-
 		}
 	}
+
+	result := len(r.GetAllChildren("shiny gold"))
 
 	return result
 }
