@@ -2,8 +2,10 @@ package util
 
 import (
 	"bufio"
+	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // ParseFile parses file line by line calling `lineHandler` with the []byte's of each line
@@ -80,4 +82,31 @@ func ReadFileToIntSlice(filename string) ([]int, error) {
 	}
 
 	return data, nil
+}
+
+// ReadFileToStringSliceWithDelim Read entire file into string slice, entries separated
+// by delim
+func ReadFileToStringSliceWithDelim(filename string, delim string) ([]string, error) {
+	dataB, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	raw := string(dataB)
+	data := strings.Split(raw, delim)
+
+	return data, nil
+}
+
+// ConvertFromCRLFtoLF will convert a files line endings from CRLF to LF
+func ConvertFromCRLFtoLF(filename string) error {
+	dataB, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+
+	raw := string(dataB)
+	raw = strings.ReplaceAll(raw, "\r\n", "\n")
+	err = ioutil.WriteFile(filename, []byte(raw), 0700)
+	return err
 }
