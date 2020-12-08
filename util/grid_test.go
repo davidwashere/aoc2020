@@ -100,6 +100,30 @@ func TestHeight(t *testing.T) {
 	if want != got {
 		t.Errorf("Expected %v but got %v", want, got)
 	}
+
+	g = NewGrid(".")
+	g.Set(0, 2, "A")
+	g.Set(0, 3, "B")
+	g.Set(0, 4, "C")
+	want = 3
+
+	got = g.Height()
+
+	g = NewGrid(".")
+	g.Set(0, -2, "A")
+	g.Set(0, -3, "B")
+	g.Set(0, -4, "C")
+	want = 3
+
+	got = g.Height()
+
+	if want != got {
+		t.Errorf("Expected %v but got %v", want, got)
+	}
+
+	if want != got {
+		t.Errorf("Expected %v but got %v", want, got)
+	}
 }
 
 func TestWidth(t *testing.T) {
@@ -117,6 +141,30 @@ func TestWidth(t *testing.T) {
 	g.Set(-1, 1, "D")
 
 	want = 3
+	got = g.Width()
+
+	if want != got {
+		t.Errorf("Expected %v but got %v", want, got)
+	}
+
+	g = NewGrid(".")
+	g.Set(2, 0, "A")
+	g.Set(3, 0, "B")
+	g.Set(4, 0, "C")
+	want = 3
+
+	got = g.Width()
+
+	if want != got {
+		t.Errorf("Expected %v but got %v", want, got)
+	}
+
+	g = NewGrid(".")
+	g.Set(-2, 0, "A")
+	g.Set(-3, 0, "B")
+	g.Set(-4, 0, "C")
+	want = 3
+
 	got = g.Width()
 
 	if want != got {

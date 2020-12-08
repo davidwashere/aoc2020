@@ -115,7 +115,7 @@ func (g *Grid) Height() int {
 		return 0
 	}
 
-	return Abs(g.minY) + Abs(g.maxY) + 1
+	return Abs(g.maxY-g.minY) + 1
 }
 
 // Width returns the full width of the grid taking into account negative coords
@@ -124,7 +124,7 @@ func (g *Grid) Width() int {
 		return 0
 	}
 
-	return Abs(g.minX) + Abs(g.maxX) + 1
+	return Abs(g.maxX-g.minX) + 1
 }
 
 // GetRow returns the full row of the given y coord, the returned data will include
