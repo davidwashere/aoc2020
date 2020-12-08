@@ -126,6 +126,10 @@ func (r *Relationator) Set(id string, obj interface{}) {
 	r.objects[id] = obj
 }
 
+func (r *Relationator) Get(id string) interface{} {
+	return r.objects[id]
+}
+
 func (r *Relationator) AddUniqueChild(id, child string) {
 	r.addChild(id, child, true)
 }

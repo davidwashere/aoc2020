@@ -4,8 +4,7 @@ import "unicode"
 
 // MapUniqueChars will create a map for each character found
 // in the given string and the count of each string occurance
-//
-// Whitespace characters are ignored
+// ignoring whitespace
 func MapUniqueChars(inputString string) map[rune]int {
 	data := map[rune]int{}
 	for _, char := range inputString {
