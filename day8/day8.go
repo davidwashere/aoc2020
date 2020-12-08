@@ -2,169 +2,163 @@ package day8
 
 import (
 	"aoc2020/util"
-	"fmt"
 	"strconv"
 	"strings"
 )
 
 type instruction struct {
-	op   string
-	plus bool
-	arg  int
+	op  string
+	arg int
+}
+
+type handler func(instruction)
+
+type machine struct {
+	Accumulator  int
+	Pos          int
+	Executed     map[int]struct{}
+	Instructions []instruction
+	Handlers     map[string]handler
+	RepeatHook   func() bool
+	HandlerHook  func(instruction) handler
+}
+
+func NewMachine(i []instruction) *machine {
+	m := &machine{}
+	m.Executed = map[int]struct{}{}
+	m.Instructions = i
+
+	handlers := map[string]handler{}
+
+	handlers["acc"] = m.acc
+	handlers["jmp"] = m.jmp
+	handlers["nop"] = m.nop
+	m.Handlers = handlers
+
+	// Default Repeat Func
+	m.RepeatHook = func() bool { return false }
+
+	// Default Handler Decision
+	m.HandlerHook = func(i instruction) handler { return m.Handlers[i.op] }
+
+	return m
+}
+
+func (m *machine) Run() {
+	for m.Next() {
+	}
+}
+
+func (m *machine) Next() bool {
+	if _, ok := m.Executed[m.Pos]; ok {
+		if !m.RepeatHook() {
+			return false
+		}
+	}
+
+	m.Executed[m.Pos] = struct{}{}
+
+	if m.Pos >= len(m.Instructions) {
+		return false
+	}
+
+	i := m.Instructions[m.Pos]
+
+	handler := m.HandlerHook(i)
+	handler(i)
+
+	return true
+}
+
+func (m *machine) Reset() {
+	m.Executed = map[int]struct{}{}
+	m.Pos = 0
+	m.Accumulator = 0
+}
+
+func (m *machine) acc(i instruction) {
+	m.Accumulator += i.arg
+	m.Pos++
+}
+
+func (m *machine) jmp(i instruction) {
+	m.Pos += i.arg
+}
+
+func (m *machine) nop(i instruction) {
+	m.Pos = m.Pos + 1
+}
+
+func parseFile(inputfile string) []instruction {
+	data, err := util.ReadFileToStringSlice(inputfile)
+	util.Check(err)
+
+	instructions := []instruction{}
+
+	for _, line := range data {
+		lineS := strings.Split(line, " ")
+		i := instruction{}
+		i.op = strings.TrimSpace(lineS[0])
+		i.arg, _ = strconv.Atoi(lineS[1])
+		instructions = append(instructions, i)
+	}
+
+	return instructions
 }
 
 func part1(inputfile string) int {
-	data, err := util.ReadFileToStringSlice(inputfile)
-	util.Check(err)
+	instructions := parseFile(inputfile)
 
-	instructions := []instruction{}
+	m := NewMachine(instructions)
+	m.RepeatHook = func() bool { return false }
 
-	for _, line := range data {
-		lineS := strings.Split(line, " ")
-		op := strings.TrimSpace(lineS[0])
+	m.Run()
 
-		i := instruction{}
-		i.op = op
-
-		argRaw := lineS[1]
-		if strings.HasPrefix(argRaw, "+") {
-			i.plus = true
-		}
-
-		i.arg, _ = strconv.Atoi(argRaw[1:])
-		instructions = append(instructions, i)
-	}
-
-	executed := map[int]bool{}
-	pos := 0
-	accumulator := 0
-
-	for {
-		i := instructions[pos]
-
-		if _, ok := executed[pos]; ok {
-			return accumulator
-		}
-
-		executed[pos] = true
-
-		if i.op == "acc" {
-			if i.plus {
-				accumulator += i.arg
-			} else {
-				accumulator -= i.arg
-			}
-			pos++
-		} else if i.op == "jmp" {
-			if i.plus {
-				pos += i.arg
-			} else {
-				pos -= i.arg
-			}
-		} else if i.op == "nop" {
-			pos++
-		}
-
-	}
+	return m.Accumulator
 }
 
 func part2(inputfile string) int {
-	data, err := util.ReadFileToStringSlice(inputfile)
-	util.Check(err)
+	instructions := parseFile(inputfile)
 
-	instructions := []instruction{}
+	m := NewMachine(instructions)
 
-	for _, line := range data {
-		lineS := strings.Split(line, " ")
-		op := strings.TrimSpace(lineS[0])
+	swapMe := indexOfNextJmpNop(instructions, -1)
 
-		i := instruction{}
-		i.op = op
-
-		argRaw := lineS[1]
-		if strings.HasPrefix(argRaw, "+") {
-			i.plus = true
-		}
-
-		i.arg, _ = strconv.Atoi(argRaw[1:])
-		instructions = append(instructions, i)
+	m.RepeatHook = func() bool {
+		swapMe = indexOfNextJmpNop(instructions, swapMe)
+		m.Reset()
+		return true
 	}
 
-	executed := map[int]bool{}
-	pos := 0
-	accumulator := 0
-
-	for {
-		if pos >= len(instructions) {
-			break
-		}
-
-		i := instructions[pos]
-
-		if _, ok := executed[pos]; ok {
-			executed = map[int]bool{}
-			changeNext(instructions)
-			pos = 0
-			accumulator = 0
-			continue
-		}
-
-		executed[pos] = true
-
-		if i.op == "acc" {
-			if i.plus {
-				accumulator += i.arg
-			} else {
-				accumulator -= i.arg
+	m.HandlerHook = func(i instruction) handler {
+		if m.Pos == swapMe {
+			if i.op == "jmp" {
+				return m.Handlers["nop"]
 			}
-			pos++
-		} else if i.op == "jmp" {
-			if i.plus {
-				pos += i.arg
-			} else {
-				pos -= i.arg
+
+			if i.op == "nop" {
+				return m.Handlers["jmp"]
 			}
-		} else if i.op == "nop" {
-			pos++
 		}
 
+		return m.Handlers[i.op]
 	}
 
-	return accumulator
+	m.Run()
+
+	return m.Accumulator
 }
 
-var onJump = true
-var swapPos = 0
-
-// change the the next jmp to nop, or if already tried that
-// chagne the next nop to jmp
-func changeNext(ins []instruction) {
-	if swapPos > 0 && onJump || !onJump {
-		if onJump {
-			ins[swapPos].op = "jmp"
-		} else {
-			ins[swapPos].op = "nop"
+func indexOfNextJmpNop(ins []instruction, cur int) int {
+	for i := cur + 1; i < len(ins); i++ {
+		in := ins[i]
+		if in.op == "jmp" {
+			return i
 		}
-		swapPos++
-	}
-
-	findOp := "jmp"
-	swapTo := "nop"
-	if !onJump {
-		findOp = "nop"
-		swapTo = "jmp"
-	}
-
-	for i := swapPos; i < len(ins); i++ {
-		in := (ins)[i]
-		if in.op == findOp {
-			swapPos = i
-			(ins)[i].op = swapTo
-			return
+		if in.op == "nop" && in.arg != 0 {
+			return i
 		}
 	}
 
-	fmt.Println("Swapping to nop > jmp")
-	onJump = !onJump
-	swapPos = 0
+	return -1
 }
