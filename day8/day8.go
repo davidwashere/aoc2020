@@ -110,8 +110,6 @@ func part1(inputfile string) int {
 	instructions := parseFile(inputfile)
 
 	m := NewMachine(instructions)
-	m.RepeatHook = func() bool { return false }
-
 	m.Run()
 
 	return m.Accumulator
@@ -120,9 +118,9 @@ func part1(inputfile string) int {
 func part2(inputfile string) int {
 	instructions := parseFile(inputfile)
 
-	m := NewMachine(instructions)
-
 	swapMe := indexOfNextJmpNop(instructions, -1)
+
+	m := NewMachine(instructions)
 
 	m.RepeatHook = func() bool {
 		swapMe = indexOfNextJmpNop(instructions, swapMe)
