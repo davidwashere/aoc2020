@@ -24,16 +24,13 @@ type Grid struct {
 
 // NewGrid .
 func NewGrid(defaultValue string) Grid {
-	maxInt := int(^uint(0) >> 1)
-	minInt := -maxInt - 1
-
 	return Grid{
 		data: map[int]map[int]string{},
 		def:  defaultValue,
-		maxX: minInt,
-		minX: maxInt,
-		maxY: minInt,
-		minY: maxInt,
+		maxX: MinInt,
+		minX: MaxInt,
+		maxY: MinInt,
+		minY: MaxInt,
 	}
 }
 
@@ -62,21 +59,10 @@ func NewGridFromFile(filename string, defaultValue string) Grid {
 
 // Set .
 func (g *Grid) Set(x, y int, val string) {
-	if x < g.minX {
-		g.minX = x
-	}
-
-	if x > g.maxX {
-		g.maxX = x
-	}
-
-	if y < g.minY {
-		g.minY = y
-	}
-
-	if y > g.maxY {
-		g.maxY = y
-	}
+	g.minX = Min(g.minX, x)
+	g.maxX = Max(g.maxX, x)
+	g.minY = Min(g.minY, y)
+	g.maxY = Max(g.maxY, y)
 
 	data := g.data
 

@@ -6,6 +6,59 @@ import (
 	"strconv"
 )
 
+const MaxUint = ^uint(0)
+const MinUint = 0
+const MaxInt = int(MaxUint >> 1)
+const MinInt = -MaxInt - 1
+
+func Min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func MinAll(nums ...int) int {
+	if len(nums) == 1 {
+		return nums[0]
+	}
+
+	min := Min(nums[0], nums[1])
+	if len(nums) == 2 {
+		return min
+	}
+
+	for i := 2; i < len(nums); i++ {
+		min = Min(min, nums[i])
+	}
+
+	return min
+}
+
+func Max(x, y int) int {
+	if x > y {
+		return x
+	}
+	return y
+}
+
+func MaxAll(nums ...int) int {
+	if len(nums) == 1 {
+		return nums[0]
+	}
+
+	max := Max(nums[0], nums[1])
+	if len(nums) == 2 {
+		return max
+	}
+
+	for i := 2; i < len(nums); i++ {
+		max = Max(max, nums[i])
+	}
+
+	return max
+}
+
 func Check(err error) {
 	if err != nil {
 		fmt.Println(err)
