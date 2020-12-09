@@ -32,7 +32,7 @@ func twoNumsSumToVal(buffer []int, val int) bool {
 			left := buffer[j]
 			right := buffer[k]
 
-			if left+right == val {
+			if left+right == val && left != right {
 				return true
 			}
 		}
