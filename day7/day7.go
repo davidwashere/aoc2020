@@ -57,7 +57,6 @@ func part1(inputfile string) int {
 
 		rule := parseRule(line)
 		for _, bag := range rule.bags {
-			// r.AddParent(bag.name, rule.bagName)
 			r.AddChild(rule.bagName, bag.name)
 		}
 	}
