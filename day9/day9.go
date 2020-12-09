@@ -24,8 +24,7 @@ func part1(inputfile string, bufferSize int) int {
 	return -1
 }
 
-// twoNumsSumToVal returns true if combination of two nums found in buffer that
-// sum to val, false otherwise
+// twoNumsSumToVal returns true if combination of two nums in buffer sum to val, false otherwise
 func twoNumsSumToVal(buffer []int, val int) bool {
 	for j := 0; j < len(buffer); j++ {
 		for k := 1; k < len(buffer); k++ {
@@ -43,7 +42,7 @@ func twoNumsSumToVal(buffer []int, val int) bool {
 func part2(inputfile string, bufferSize int) int {
 	find := part1(inputfile, bufferSize)
 
-	// Parsing file again is a inefficient, but hey! it's AoC!
+	// Parsing file again is inefficient, but hey! it's AoC!
 	data, err := util.ReadFileToIntSlice(inputfile)
 	util.Check(err)
 
