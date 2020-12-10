@@ -1,4 +1,4 @@
-package day8
+package day08
 
 func part1(inputfile string) int {
 	m := NewMachine(inputfile)

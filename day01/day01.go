@@ -1,4 +1,4 @@
-package day1
+package day01
 
 import "aoc2020/util"
 
