@@ -11,21 +11,23 @@ import (
 // When children are added, parent relationships are automatically set, and vice versa when
 // parents are added
 type Relationator struct {
-	objects  map[string]interface{}
-	children map[string][]string
-	parents  map[string][]string
+	objects  map[T]T
+	children map[T][]T
+	parents  map[T][]T
 }
 
 func NewRelationator() Relationator {
 	return Relationator{
-		objects:  map[string]interface{}{},
-		children: map[string][]string{},
-		parents:  map[string][]string{},
+		objects:  map[T]T{},
+		children: map[T][]T{},
+		parents:  map[T][]T{},
 	}
 }
 
-func mapKeys(m map[string]struct{}) []string {
-	keys := make([]string, len(m))
+type T interface{}
+
+func mapKeys(m map[T]struct{}) []T {
+	keys := make([]T, len(m))
 
 	i := 0
 	for k := range m {
@@ -36,12 +38,12 @@ func mapKeys(m map[string]struct{}) []string {
 	return keys
 }
 
-func (r *Relationator) GetChildren(id string) []string {
+func (r *Relationator) GetChildren(id T) []T {
 	return r.children[id]
 }
 
-func (r *Relationator) GetAllChildren(id string) []string {
-	childs := []string{}
+func (r *Relationator) GetAllChildren(id T) []T {
+	childs := []T{}
 
 	for _, child := range r.GetChildren(id) {
 		r.recurChildren(&childs, child)
@@ -50,7 +52,7 @@ func (r *Relationator) GetAllChildren(id string) []string {
 	return childs
 }
 
-func (r *Relationator) recurChildren(childs *[]string, id string) {
+func (r *Relationator) recurChildren(childs *[]T, id T) {
 	*childs = append(*childs, id)
 
 	for _, child := range r.GetChildren(id) {
@@ -58,8 +60,8 @@ func (r *Relationator) recurChildren(childs *[]string, id string) {
 	}
 }
 
-func (r *Relationator) GetAllUniqueChildren(id string) []string {
-	childs := map[string]struct{}{}
+func (r *Relationator) GetAllUniqueChildren(id T) []T {
+	childs := map[T]struct{}{}
 
 	for _, child := range r.GetChildren(id) {
 		r.recurUniqueChildren(childs, child)
@@ -68,7 +70,7 @@ func (r *Relationator) GetAllUniqueChildren(id string) []string {
 	return mapKeys(childs)
 }
 
-func (r *Relationator) recurUniqueChildren(childs map[string]struct{}, id string) {
+func (r *Relationator) recurUniqueChildren(childs map[T]struct{}, id T) {
 	if _, ok := childs[id]; ok {
 		return
 	}
@@ -79,8 +81,8 @@ func (r *Relationator) recurUniqueChildren(childs map[string]struct{}, id string
 	}
 }
 
-func (r *Relationator) GetAllParents(id string) []string {
-	parents := []string{}
+func (r *Relationator) GetAllParents(id T) []T {
+	parents := []T{}
 
 	for _, parent := range r.GetParents(id) {
 		r.recurParents(&parents, parent)
@@ -89,7 +91,7 @@ func (r *Relationator) GetAllParents(id string) []string {
 	return parents
 }
 
-func (r *Relationator) recurParents(parents *[]string, id string) {
+func (r *Relationator) recurParents(parents *[]T, id T) {
 	*parents = append(*parents, id)
 
 	for _, parent := range r.GetParents(id) {
@@ -97,8 +99,8 @@ func (r *Relationator) recurParents(parents *[]string, id string) {
 	}
 }
 
-func (r *Relationator) GetAllUniqueParents(id string) []string {
-	parents := map[string]struct{}{}
+func (r *Relationator) GetAllUniqueParents(id T) []T {
+	parents := map[T]struct{}{}
 
 	for _, parent := range r.GetParents(id) {
 		r.recurUniqueParents(parents, parent)
@@ -107,7 +109,7 @@ func (r *Relationator) GetAllUniqueParents(id string) []string {
 	return mapKeys(parents)
 }
 
-func (r *Relationator) recurUniqueParents(parents map[string]struct{}, id string) {
+func (r *Relationator) recurUniqueParents(parents map[T]struct{}, id T) {
 	if _, ok := parents[id]; ok {
 		return
 	}
@@ -118,27 +120,27 @@ func (r *Relationator) recurUniqueParents(parents map[string]struct{}, id string
 	}
 }
 
-func (r *Relationator) GetParents(id string) []string {
+func (r *Relationator) GetParents(id T) []T {
 	return r.parents[id]
 }
 
-func (r *Relationator) Set(id string, obj interface{}) {
+func (r *Relationator) Set(id T, obj T) {
 	r.objects[id] = obj
 }
 
-func (r *Relationator) Get(id string) interface{} {
+func (r *Relationator) Get(id T) T {
 	return r.objects[id]
 }
 
-func (r *Relationator) AddUniqueChild(id, child string) {
+func (r *Relationator) AddUniqueChild(id, child T) {
 	r.addChild(id, child, true)
 }
 
-func (r *Relationator) AddChild(id, child string) {
+func (r *Relationator) AddChild(id, child T) {
 	r.addChild(id, child, false)
 }
 
-func (r *Relationator) addChild(id, child string, unique bool) {
+func (r *Relationator) addChild(id, child T, unique bool) {
 	if _, ok := r.objects[id]; !ok {
 		r.Set(id, nil)
 	}
@@ -148,27 +150,27 @@ func (r *Relationator) addChild(id, child string, unique bool) {
 	}
 
 	if unique {
-		if !IsIn(r.children[id], child) {
+		if !IsInFace(r.children[id], child) {
 			r.children[id] = append(r.children[id], child)
 		}
 	} else {
 		r.children[id] = append(r.children[id], child)
 	}
 
-	if !IsIn(r.parents[child], id) {
+	if !IsInFace(r.parents[child], id) {
 		r.parents[child] = append(r.parents[child], id)
 	}
 }
 
-func (r *Relationator) AddUniqueParent(id, parent string) {
+func (r *Relationator) AddUniqueParent(id, parent T) {
 	r.addParent(id, parent, true)
 }
 
-func (r *Relationator) AddParent(id, parent string) {
+func (r *Relationator) AddParent(id, parent T) {
 	r.addParent(id, parent, false)
 }
 
-func (r *Relationator) addParent(id, parent string, unique bool) {
+func (r *Relationator) addParent(id, parent T, unique bool) {
 	if _, ok := r.objects[id]; !ok {
 		r.Set(id, nil)
 	}
@@ -180,21 +182,31 @@ func (r *Relationator) addParent(id, parent string, unique bool) {
 	if !unique {
 		r.parents[id] = append(r.parents[id], parent)
 	} else {
-		if !IsIn(r.parents[id], parent) {
+		if !IsInFace(r.parents[id], parent) {
 			r.parents[id] = append(r.parents[id], parent)
 		}
 	}
 
-	if !IsIn(r.children[parent], id) {
+	if !IsInFace(r.children[parent], id) {
 		r.children[parent] = append(r.children[parent], id)
 	}
 }
 
-func (r Relationator) StringNode(id string) string {
+func IsInFace(slice []T, val T) bool {
+	for _, v := range slice {
+		if v == val {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (r Relationator) StringNode(id T) string {
 	var sb strings.Builder
 	key := id
 	val := r.objects[id]
-	sb.WriteString(fmt.Sprintf("%s: %+v\n", key, val))
+	sb.WriteString(fmt.Sprintf("%v: %+v\n", key, val))
 	children := r.children[key]
 	sb.WriteString(fmt.Sprintf("  childrn: %+v\n", children))
 	parents := r.parents[key]
