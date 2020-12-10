@@ -190,18 +190,26 @@ func (r *Relationator) addParent(id, parent string, unique bool) {
 	}
 }
 
+func (r Relationator) StringNode(id string) string {
+	var sb strings.Builder
+	key := id
+	val := r.objects[id]
+	sb.WriteString(fmt.Sprintf("%s: %+v\n", key, val))
+	children := r.children[key]
+	sb.WriteString(fmt.Sprintf("  childrn: %+v\n", children))
+	parents := r.parents[key]
+	sb.WriteString(fmt.Sprintf("  parents: %+v", parents))
+
+	return sb.String()
+}
+
 func (r Relationator) String() string {
 	var sb strings.Builder
-	for key, val := range r.objects {
+	for key := range r.objects {
 		if sb.Len() > 0 {
 			sb.WriteString("\n")
 		}
-		sb.WriteString(fmt.Sprintf("%s: %+v\n", key, val))
-		children := r.children[key]
-		sb.WriteString(fmt.Sprintf("  childrn: %+v\n", children))
-		parents := r.parents[key]
-		sb.WriteString(fmt.Sprintf("  parents: %+v", parents))
-
+		sb.WriteString(r.StringNode(key))
 	}
 	return sb.String()
 }
