@@ -297,18 +297,18 @@ func (t *Tree) GetString(id treeT) string {
 
 // AddChild adds a child id to a parent, if parent doesn't exist the parent is added
 // to the tree with a nil object
-func (t *Tree) AddChild(id, child treeT) {
-	t.addChild(id, child, false)
+func (t *Tree) AddChild(parent, child treeT) {
+	t.addChild(parent, child, false)
 }
 
 // AddUniqueChild same as AddChild but will not add the child id if the parent already has the link
-func (t *Tree) AddUniqueChild(id, child treeT) {
-	t.addChild(id, child, true)
+func (t *Tree) AddUniqueChild(parent, child treeT) {
+	t.addChild(parent, child, true)
 }
 
-func (t *Tree) addChild(id, child treeT, unique bool) {
-	if _, ok := t.objects[id]; !ok {
-		t.Set(id, nil)
+func (t *Tree) addChild(parent, child treeT, unique bool) {
+	if _, ok := t.objects[parent]; !ok {
+		t.Set(parent, nil)
 	}
 
 	if _, ok := t.objects[child]; !ok {
@@ -316,15 +316,15 @@ func (t *Tree) addChild(id, child treeT, unique bool) {
 	}
 
 	if unique {
-		if !t.isInFace(t.children[id], child) {
-			t.children[id] = append(t.children[id], child)
+		if !t.isInFace(t.children[parent], child) {
+			t.children[parent] = append(t.children[parent], child)
 		}
 	} else {
-		t.children[id] = append(t.children[id], child)
+		t.children[parent] = append(t.children[parent], child)
 	}
 
-	if !t.isInFace(t.parents[child], id) {
-		t.parents[child] = append(t.parents[child], id)
+	if !t.isInFace(t.parents[child], parent) {
+		t.parents[child] = append(t.parents[child], parent)
 	}
 }
 
