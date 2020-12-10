@@ -12,7 +12,7 @@ func parseJoltagesAndSort(inputfile string) []int {
 	sort.Ints(data)
 
 	// Add 0 to start
-	data = append([]int{0}, data...) // Add 0 as start
+	data = append([]int{0}, data...)
 
 	// Add last 3 jolt hop
 	last := data[len(data)-1]
