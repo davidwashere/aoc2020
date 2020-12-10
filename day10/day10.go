@@ -36,19 +36,9 @@ func part1(inputfile string) int {
 }
 
 func part2(inputfile string) int {
-	data, err := util.ReadFileToIntSlice(inputfile)
-	util.Check(err)
-
-	sort.Ints(data)
+	data := parseJoltagesAndSort(inputfile)
 
 	r := util.NewRelationator()
-
-	// prepend 0
-	data = append([]int{0}, data...)
-
-	// append highest + 3 (not necessary, will never be an additional path)
-	last := data[len(data)-1]
-	data = append(data, last+3)
 
 	lastIndex := len(data) - 1
 	for i := 0; i <= lastIndex; i++ {
@@ -65,7 +55,7 @@ func part2(inputfile string) int {
 	counts := map[int]int{}
 	count := 0
 	for _, child := range r.GetChildren(0) {
-		count += recurChildren(r, counts, child.(int), last)
+		count += recurChildren(r, counts, child.(int), data[lastIndex])
 	}
 
 	return count
