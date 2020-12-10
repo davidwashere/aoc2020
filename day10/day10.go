@@ -5,7 +5,7 @@ import (
 	"sort"
 )
 
-func part1(inputfile string) int {
+func parseJoltagesAndSort(inputfile string) []int {
 	data, err := util.ReadFileToIntSlice(inputfile)
 	util.Check(err)
 
@@ -17,6 +17,12 @@ func part1(inputfile string) int {
 	// Add last 3 jolt hop
 	last := data[len(data)-1]
 	data = append(data, last+3)
+
+	return data
+}
+
+func part1(inputfile string) int {
+	data := parseJoltagesAndSort(inputfile)
 
 	hops := map[int]int{}
 	for i := 1; i < len(data); i++ {
