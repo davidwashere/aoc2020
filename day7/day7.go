@@ -48,7 +48,7 @@ func part1(inputfile string) int {
 	data, err := util.ReadFileToStringSlice(inputfile)
 	util.Check(err)
 
-	r := util.NewRelationator()
+	r := util.NewTree()
 
 	for _, line := range data {
 		if strings.HasPrefix(line, "shiny gold") {
@@ -69,7 +69,7 @@ func part2(inputfile string) int {
 	data, err := util.ReadFileToStringSlice(inputfile)
 	util.Check(err)
 
-	r := util.NewRelationator()
+	r := util.NewTree()
 	for _, line := range data {
 		rule := parseRule(line)
 

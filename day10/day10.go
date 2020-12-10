@@ -38,7 +38,7 @@ func part1(inputfile string) int {
 func part2(inputfile string) int {
 	data := parseJoltagesAndSort(inputfile)
 
-	r := util.NewRelationator()
+	t := util.NewTree()
 
 	lastIndex := len(data) - 1
 	for i := 0; i <= lastIndex; i++ {
@@ -47,37 +47,11 @@ func part2(inputfile string) int {
 		for j := 1; j <= util.Min(lastIndex-i, 3); j++ {
 			next := data[i+j]
 			if next-cur <= 3 {
-				r.AddChild(cur, next)
+				t.AddChild(cur, next)
 			}
 		}
 	}
 
-	counts := map[int]int{}
-	count := 0
-	for _, child := range r.GetChildren(0) {
-		count += recurChildren(r, counts, child.(int), data[lastIndex])
-	}
-
+	count := t.CountPaths(0, data[lastIndex])
 	return count
-}
-
-func recurChildren(r util.Relationator, counts map[int]int, id int, last int) int {
-	val, ok := counts[id]
-
-	if ok {
-		// we already know num sub paths for this id
-		// This is KEY to prevent lengthy re-computation
-		// removing this condition will work for samples but takes too long for final
-		return val
-	}
-
-	if id == last {
-		return 1
-	}
-
-	for _, child := range r.GetChildren(id) {
-		counts[id] += recurChildren(r, counts, child.(int), last)
-	}
-
-	return counts[id]
 }
