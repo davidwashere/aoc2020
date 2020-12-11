@@ -4,14 +4,6 @@ import (
 	"aoc2020/util"
 )
 
-// floor (.)
-// empty seat (L)
-// occupied seat (#)
-type coord struct {
-	x int
-	y int
-}
-
 type change struct {
 	x   int
 	y   int
@@ -38,14 +30,14 @@ func part1(inputfile string) int {
 		changes := []change{}
 
 		grid.VisitAll(func(x int, y int, val string) {
-			adjOctSeats := adjOccupiedSeats(grid, x, y)
+			adjOccSeats := adjOccupiedSeats(grid, x, y)
 			if val == "L" {
-				if adjOctSeats == 0 {
+				if adjOccSeats == 0 {
 					changes = append(changes, change{x, y, "#"})
 				}
 
 			} else if val == "#" {
-				if adjOctSeats >= 4 {
+				if adjOccSeats >= 4 {
 					changes = append(changes, change{x, y, "L"})
 				}
 
@@ -61,27 +53,27 @@ func part1(inputfile string) int {
 		}
 	}
 
-	occupiedSeats := 0
+	occSeats := 0
 	grid.VisitAll(func(x int, y int, val string) {
 		if val == "#" {
-			occupiedSeats++
+			occSeats++
 		}
 	})
 
-	return occupiedSeats
+	return occSeats
 }
 
 // adjOccupiedSeats counts number of occupied seats immediatly surrounding
 // the x, y coord
 func adjOccupiedSeats(grid util.Grid, x, y int) int {
-	occupiedSeats := 0
+	occSeats := 0
 	for _, v := range adjVectors {
 		if grid.Get(v.Apply(x, y)) == "#" {
-			occupiedSeats++
+			occSeats++
 		}
 	}
 
-	return occupiedSeats
+	return occSeats
 }
 
 func part2(inputfile string) int {
@@ -113,25 +105,25 @@ func part2(inputfile string) int {
 		}
 	}
 
-	occupiedSeats := 0
+	occSeats := 0
 	grid.VisitAll(func(x int, y int, val string) {
 		if val == "#" {
-			occupiedSeats++
+			occSeats++
 		}
 	})
 
-	return occupiedSeats
+	return occSeats
 }
 
 // adjSeenOccupiedSeats counts number of occupied seats 'visible' to
 // the x, y coord
 func adjSeenOccupiedSeats(grid util.Grid, x, y int) int {
-	occupiedSeats := 0
+	occSeats := 0
 	for _, v := range adjVectors {
 		curX, curY := v.Apply(x, y)
 		for {
 			if grid.Get(curX, curY) == "#" {
-				occupiedSeats++
+				occSeats++
 				break
 			}
 
@@ -143,5 +135,5 @@ func adjSeenOccupiedSeats(grid util.Grid, x, y int) int {
 		}
 	}
 
-	return occupiedSeats
+	return occSeats
 }
