@@ -18,15 +18,17 @@ type change struct {
 	val string
 }
 
-var adjVectors = []coord{
-	coord{-1, -1},
-	coord{0, -1},
-	coord{1, -1},
-	coord{1, 0},
-	coord{1, 1},
-	coord{0, 1},
-	coord{-1, 1},
-	coord{-1, 0},
+type vec = util.Vector
+
+var adjVectors = []vec{
+	vec{X: -1, Y: -1, M: 1},
+	vec{X: 0, Y: -1, M: 1},
+	vec{X: 1, Y: -1, M: 1},
+	vec{X: 1, Y: 0, M: 1},
+	vec{X: 1, Y: 1, M: 1},
+	vec{X: 0, Y: 1, M: 1},
+	vec{X: -1, Y: 1, M: 1},
+	vec{X: -1, Y: 0, M: 1},
 }
 
 // adjOccupiedSeats counts number of occupied seats immediatly surrounding
@@ -34,7 +36,7 @@ var adjVectors = []coord{
 func adjOccupiedSeats(grid util.Grid, x, y int) int {
 	occupiedSeats := 0
 	for _, v := range adjVectors {
-		if grid.Get(x+v.x, y+v.y) == "#" {
+		if grid.Get(v.Apply(x, y)) == "#" {
 			occupiedSeats++
 		}
 	}
@@ -91,9 +93,8 @@ func part1(inputfile string) int {
 // the x, y coord
 func adjSeenOccupiedSeats(grid util.Grid, x, y int) int {
 	occupiedSeats := 0
-	for _, c := range adjVectors {
-		curX := x + c.x
-		curY := y + c.y
+	for _, v := range adjVectors {
+		curX, curY := v.Apply(x, y)
 		for {
 			if grid.Get(curX, curY) == "#" {
 				occupiedSeats++
@@ -104,8 +105,7 @@ func adjSeenOccupiedSeats(grid util.Grid, x, y int) int {
 				break
 			}
 
-			curX = curX + c.x
-			curY = curY + c.y
+			curX, curY = v.Apply(curX, curY)
 		}
 	}
 
