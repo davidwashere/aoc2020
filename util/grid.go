@@ -128,6 +128,16 @@ func (g *Grid) GetRow(y int) []string {
 	return row
 }
 
+// VisitAll will visit every grid coordinate with extents based on
+// grids current width & height
+func (g *Grid) VisitAll(visitFunc func(x int, y int, val string)) {
+	for y := 0; y < g.Height(); y++ {
+		for x := 0; x < g.Width(); x++ {
+			visitFunc(x, y, g.Get(x, y))
+		}
+	}
+}
+
 // Dump Prints out text representation of grid, assumes each values is a single character
 func (g *Grid) Dump() {
 	if !g.initialized {
