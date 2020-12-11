@@ -10,17 +10,17 @@ type change struct {
 	val string
 }
 
-type vec = util.Vector
+var vec = util.NewNormalizedVector
 
-var adjVectors = []vec{
-	vec{X: -1, Y: -1, M: 1},
-	vec{X: 0, Y: -1, M: 1},
-	vec{X: 1, Y: -1, M: 1},
-	vec{X: 1, Y: 0, M: 1},
-	vec{X: 1, Y: 1, M: 1},
-	vec{X: 0, Y: 1, M: 1},
-	vec{X: -1, Y: 1, M: 1},
-	vec{X: -1, Y: 0, M: 1},
+var adjVectors = []util.Vector{
+	vec(-1, -1),
+	vec(0, -1),
+	vec(1, -1),
+	vec(1, 0),
+	vec(1, 1),
+	vec(0, 1),
+	vec(-1, 1),
+	vec(-1, 0),
 }
 
 func part1(inputfile string) int {
