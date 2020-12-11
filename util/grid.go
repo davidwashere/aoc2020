@@ -131,8 +131,8 @@ func (g *Grid) GetRow(y int) []string {
 // VisitAll will visit every grid coordinate with extents based on
 // grids current width & height
 func (g *Grid) VisitAll(visitFunc func(x int, y int, val string)) {
-	for y := 0; y < g.Height(); y++ {
-		for x := 0; x < g.Width(); x++ {
+	for y := g.minY; y <= g.maxY; y++ {
+		for x := g.minX; x <= g.maxX; x++ {
 			visitFunc(x, y, g.Get(x, y))
 		}
 	}
