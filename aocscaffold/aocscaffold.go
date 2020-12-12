@@ -155,7 +155,7 @@ func main() {
 	dayS := fmt.Sprintf("%02d", day)
 
 	packageName := fmt.Sprintf("day%s", dayS)
-	fmt.Println(packageName)
+	// fmt.Println(packageName)
 
 	data := tmplfields{}
 	data.DayName = dayS
@@ -189,4 +189,6 @@ func main() {
 	f, err = os.Create(filepath.Join(packageName, "sample.txt"))
 	check(err)
 	f.Close()
+
+	fmt.Printf("Scaffold %v successfully\n", packageName)
 }
