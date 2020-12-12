@@ -1,5 +1,9 @@
 package util
 
+import (
+	"math"
+)
+
 // Vector holds direction and magnitude
 type Vector struct {
 	X int
@@ -31,4 +35,18 @@ func (v *Vector) Apply(x, y int) (tx int, ty int) {
 	ty = (v.Y * v.M) + y
 
 	return tx, ty
+}
+
+// Rotate will rotate the vector by the given # of degrees, a positive degree
+// will rotate the vector counter-clockwise, a negative degree will rotate clockwise
+func (v *Vector) Rotate(deg float64) {
+	rad := deg * (math.Pi / 180.0)
+
+	ca := math.Cos(rad)
+	sa := math.Sin(rad)
+	tx := math.Round(ca*float64(v.X) - sa*float64(v.Y))
+	ty := math.Round(sa*float64(v.X) + ca*float64(v.Y))
+
+	v.X = int(tx)
+	v.Y = int(ty)
 }
