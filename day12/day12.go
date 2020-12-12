@@ -47,9 +47,9 @@ func part1(inputfile string) int {
 		case "W":
 			curX -= ins.mag
 		case "L":
-			dir.Rotate(float64(ins.mag))
+			dir.RotateInt(ins.mag)
 		case "R":
-			dir.Rotate(float64(-ins.mag))
+			dir.RotateInt(-ins.mag)
 		case "F":
 			dir.M = ins.mag
 			curX, curY = dir.Apply(curX, curY)
@@ -77,9 +77,9 @@ func part2(inputfile string) int {
 		case "W":
 			dir.X -= ins.mag
 		case "L":
-			dir.Rotate(float64(ins.mag))
+			dir.RotateInt(ins.mag)
 		case "R":
-			dir.Rotate(float64(-ins.mag))
+			dir.RotateInt(-ins.mag)
 		case "F":
 			dir.M = ins.mag
 			curX, curY = dir.Apply(curX, curY)

@@ -50,3 +50,8 @@ func (v *Vector) Rotate(deg float64) {
 	v.X = int(tx)
 	v.Y = int(ty)
 }
+
+// RotateInt same as Rotate but takes an int
+func (v *Vector) RotateInt(deg int) {
+	v.Rotate(float64(deg))
+}
