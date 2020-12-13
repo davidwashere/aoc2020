@@ -113,18 +113,11 @@ func part1(inputfile string) int {
 func Part2(inputfile string) int {
 	earliest, buses := parseFileBuses(inputfile)
 
-	bigDumpStupidSlowBus := buses[0]
-
-	start := earliest
-	for (start+bigDumpStupidSlowBus.offset)%bigDumpStupidSlowBus.busID != 0 {
-		start++
-	}
-
 	lastBusIndex := len(buses) - 1
-	iter := 0
+	start := buses[0].busID - buses[0].offset // The current 'start' timestamp
+	inc := buses[0].busID                     // The current 'increment' to test next timestamp
+	locked := 0                               // Will contain the largest bus index that is in 'sync'
 	for {
-		iter++
-
 		for i, bus := range buses {
 			mod := (start + bus.offset) % bus.busID
 
@@ -132,14 +125,18 @@ func Part2(inputfile string) int {
 				break
 			}
 
-			if mod == 0 && i == lastBusIndex {
+			if i > locked {
+				// At this point i and i-1 are in 'sync', so increase
+				// increment so they remain in sync
+				locked++
+				inc = inc * bus.busID
+			}
+
+			if i == lastBusIndex && start >= earliest {
 				return start
 			}
 		}
 
-		start = start + bigDumpStupidSlowBus.busID
-		if iter%1000000000 == 0 {
-			fmt.Println("Bil:", start)
-		}
+		start += inc
 	}
 }

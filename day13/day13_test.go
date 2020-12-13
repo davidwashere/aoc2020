@@ -25,9 +25,11 @@ func TestP1_Actual(t *testing.T) {
 }
 
 func TestP2(t *testing.T) {
-	got := Part2("sample.txt")
+	var got int
+	var want int
+	got = Part2("sample.txt")
 	fmt.Printf("Got: %v\n", got)
-	want := 1068781
+	want = 1068781
 	if got != want {
 		t.Errorf("Got %v but want %v", got, want)
 	}
@@ -66,9 +68,6 @@ func TestP2(t *testing.T) {
 	if got != want {
 		t.Errorf("Got %v but want %v", got, want)
 	}
-
-	got = Part2("sample7.txt")
-	fmt.Printf("Got: %v\n", got)
 }
 
 func TestP2_Actual(t *testing.T) {
