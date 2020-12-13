@@ -25,6 +25,7 @@ func parseFile(inputfile string) []thing {
 	data, _ := util.ReadFileToStringSlice(inputfile)
 	// data, _ := util.ReadFileToIntSlice(inputfile)
 	// data, _ := util.ReadFileToStringSliceWithDelim(inputfile, "\n\n")
+	// data, _ := util.ReadFileToStringSliceWithDelim(inputfile, ",")
 
 	things := []thing{}
 	for _, line := range data {
