@@ -7,80 +7,38 @@ import (
 	"strings"
 )
 
-func part1(inputfile string) int {
-	data, _ := util.ReadFileToStringSlice(inputfile)
-
-	validValues := map[int]bool{}
-
-	result := 0
-	onFields := true
-	onNearby := false
-	for _, line := range data {
-		if onFields {
-			if line == "" {
-				onFields = false
-				continue
-			}
-
-			lineS := strings.Split(line, ": ")
-			valsS := strings.Split(lineS[1], " or ")
-
-			minMaxS := strings.Split(valsS[0], "-")
-			min, _ := strconv.Atoi(minMaxS[0])
-			max, _ := strconv.Atoi(minMaxS[1])
-
-			for i := min; i <= max; i++ {
-				validValues[i] = true
-			}
-
-			minMaxS = strings.Split(valsS[1], "-")
-			min, _ = strconv.Atoi(minMaxS[0])
-			max, _ = strconv.Atoi(minMaxS[1])
-
-			for i := min; i <= max; i++ {
-				validValues[i] = true
-			}
-		} else if !onNearby {
-			if strings.HasPrefix(line, "nearby tickets") {
-				onNearby = true
-			} else {
-				continue
-			}
-		} else {
-			valsS := strings.Split(line, ",")
-
-			for _, val := range valsS {
-				num, _ := strconv.Atoi(val)
-				if _, ok := validValues[num]; !ok {
-					result += num
-				}
-			}
-		}
-
-	}
-
-	return result
-}
-
 type field struct {
 	name        string
-	validValues map[int]bool
+	validValues map[int]struct{}
+}
+
+type fileT struct {
+	fields        []field
+	validValues   map[int]struct{}
+	yourTicket    []int
+	nearbyTickets [][]int
+}
+
+func NewFile() fileT {
+	return fileT{
+		fields:        []field{},
+		validValues:   map[int]struct{}{},
+		yourTicket:    []int{},
+		nearbyTickets: [][]int{},
+	}
 }
 
 func NewField() field {
 	return field{
 		name:        "",
-		validValues: map[int]bool{},
+		validValues: map[int]struct{}{},
 	}
 }
 
-func part2(inputfile string) int {
+func parsefile(inputfile string) fileT {
 	data, _ := util.ReadFileToStringSlice(inputfile)
 
-	fields := []field{}
-	validValues := map[int]bool{}
-	myTicket := []int{}
-	possibilities := [][]field{}
+	file := NewFile()
 
 	onFields := true
 	onMyTicket := false
@@ -89,15 +47,9 @@ func part2(inputfile string) int {
 		if onFields {
 			if line == "" {
 				onFields = false
-
-				for i := 0; i < len(fields); i++ {
-					cpy := []field{}
-					cpy = append(cpy, fields...)
-					possibilities = append(possibilities, cpy)
-				}
-
 				continue
 			}
+
 			f := NewField()
 
 			lineS := strings.Split(line, ": ")
@@ -110,8 +62,8 @@ func part2(inputfile string) int {
 			max, _ := strconv.Atoi(minMaxS[1])
 
 			for i := min; i <= max; i++ {
-				validValues[i] = true
-				f.validValues[i] = true
+				file.validValues[i] = struct{}{}
+				f.validValues[i] = struct{}{}
 			}
 
 			minMaxS = strings.Split(valsS[1], "-")
@@ -119,11 +71,11 @@ func part2(inputfile string) int {
 			max, _ = strconv.Atoi(minMaxS[1])
 
 			for i := min; i <= max; i++ {
-				validValues[i] = true
-				f.validValues[i] = true
+				file.validValues[i] = struct{}{}
+				f.validValues[i] = struct{}{}
 			}
 
-			fields = append(fields, f)
+			file.fields = append(file.fields, f)
 			continue
 		}
 
@@ -137,7 +89,7 @@ func part2(inputfile string) int {
 			for _, val := range valsS {
 				num, _ := strconv.Atoi(val)
 
-				myTicket = append(myTicket, num)
+				file.yourTicket = append(file.yourTicket, num)
 			}
 		}
 
@@ -145,30 +97,12 @@ func part2(inputfile string) int {
 			thisTicket := []int{}
 			valsS := strings.Split(line, ",")
 
-			invalid := false
 			for _, val := range valsS {
 				num, _ := strconv.Atoi(val)
-				if _, ok := validValues[num]; !ok {
-					invalid = true
-					break
-				}
 				thisTicket = append(thisTicket, num)
 			}
 
-			if invalid {
-				continue
-			}
-
-			for i, num := range thisTicket {
-				valid := []field{}
-				for _, itm := range possibilities[i] {
-					if _, ok := itm.validValues[num]; ok {
-						valid = append(valid, itm)
-					}
-				}
-
-				possibilities[i] = valid
-			}
+			file.nearbyTickets = append(file.nearbyTickets, thisTicket)
 		}
 
 		if strings.HasPrefix(line, "nearby tickets") {
@@ -178,10 +112,78 @@ func part2(inputfile string) int {
 		}
 	}
 
+	return file
+}
+
+func part1(inputfile string) int {
+	file := parsefile(inputfile)
+
+	result := 0
+	for _, nearbyTicket := range file.nearbyTickets {
+		for _, num := range nearbyTicket {
+			if _, found := file.validValues[num]; !found {
+				// Invalid Value
+				result += num
+			}
+		}
+	}
+
+	return result
+}
+
+func part2(inputfile string) int {
+	file := parsefile(inputfile)
+
+	// Add every field to every possibility index (probably better way to do this)
+	possibilities := [][]field{}
+	for i := 0; i < len(file.fields); i++ {
+		cpy := []field{}
+		cpy = append(cpy, file.fields...)
+		possibilities = append(possibilities, cpy)
+	}
+
+	// Remove invalid tickets from nearbyTickets
+	validTickets := [][]int{}
+	for _, nearbyTicket := range file.nearbyTickets {
+		invalid := false
+		for _, num := range nearbyTicket {
+			if _, found := file.validValues[num]; !found {
+				invalid = true
+			}
+		}
+
+		if !invalid {
+			validTickets = append(validTickets, nearbyTicket)
+		}
+	}
+	file.nearbyTickets = validTickets
+
+	// For each nearby ticket update possibilies with only valid fields
+	for _, thisTicket := range file.nearbyTickets {
+		for i, num := range thisTicket {
+			validFields := []field{}
+			for _, itm := range possibilities[i] {
+				if _, ok := itm.validValues[num]; ok {
+					validFields = append(validFields, itm)
+				}
+			}
+
+			possibilities[i] = validFields
+		}
+	}
+
+	for i, pos := range possibilities {
+		fmt.Printf("[%v]: ", i)
+		for _, f := range pos {
+			fmt.Printf("%v, ", f.name)
+		}
+		fmt.Println()
+	}
+
+	// In very ugly way, filter the possibilities until there is one per index
 	solid := map[string]bool{}
 	final := map[int]field{}
-
-	for len(final) < len(fields) {
+	for len(final) < len(file.fields) {
 		for i, pos := range possibilities {
 			if len(pos) == 1 {
 				solid[pos[0].name] = true
@@ -197,19 +199,22 @@ func part2(inputfile string) int {
 			}
 			possibilities[i] = remain
 		}
-
 	}
 
 	for i, pos := range possibilities {
-		fmt.Printf("[%v]: %v\n", i, pos[0].name)
+		fmt.Printf("[%v]: ", i)
+		for _, f := range pos {
+			fmt.Printf("%v, ", f.name)
+		}
+		fmt.Println()
 	}
 
+	// Find the departure fields, and multiply values
 	result := 1
-	for i, num := range myTicket {
+	for i, num := range file.yourTicket {
 		if strings.HasPrefix(possibilities[i][0].name, "departure") {
 			result *= num
 		}
 	}
-
 	return result
 }
