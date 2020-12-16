@@ -72,13 +72,11 @@ func parsefile(inputfile string) fileT {
 				onMyTicket = false
 				continue
 			}
-			tokens := util.ParseTokens(line)
-			file.yourTicket = tokens.Ints
+			file.yourTicket = util.ParseInts(line)
 		}
 
 		if onNearby {
-			tokens := util.ParseTokens(line)
-			file.nearbyTickets = append(file.nearbyTickets, tokens.Ints)
+			file.nearbyTickets = append(file.nearbyTickets, util.ParseInts(line))
 		}
 
 		if strings.HasPrefix(line, "nearby tickets") {
