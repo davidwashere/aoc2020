@@ -45,16 +45,6 @@ func PermsOfLen(inSlice interface{}, maxlen int, f func([]interface{})) {
 	perms(convertedData, nil, maxlen, f)
 }
 
-// convToType will return a 'reflected' value of the kind specified
-// ref: https://ahmet.im/blog/golang-take-slices-of-any-type-as-input-parameter/
-func convToType(arg interface{}, kind reflect.Kind) (val reflect.Value, ok bool) {
-	val = reflect.ValueOf(arg)
-	if val.Kind() == kind {
-		ok = true
-	}
-	return
-}
-
 // perms will recursively find every permutation for `data`, and when a permutation is
 // found will call `f`.  Permutation length is limited by `l`
 func perms(data []interface{}, ans []interface{}, l int, f func([]interface{})) {

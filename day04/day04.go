@@ -118,7 +118,7 @@ func isValid(passport Passport) bool {
 	}
 
 	val = passport.fields["ecl"]
-	if !util.IsIn(eyesWanted, val) {
+	if !util.IsStringIn(eyesWanted, val) {
 		return false
 	}
 

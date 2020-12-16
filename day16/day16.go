@@ -134,14 +134,6 @@ func part1(inputfile string) int {
 func part2(inputfile string) int {
 	file := parsefile(inputfile)
 
-	// Add every field to every possibility index (probably better way to do this)
-	possibilities := [][]field{}
-	for i := 0; i < len(file.fields); i++ {
-		cpy := []field{}
-		cpy = append(cpy, file.fields...)
-		possibilities = append(possibilities, cpy)
-	}
-
 	// Remove invalid tickets from nearbyTickets
 	validTickets := [][]int{}
 	for _, nearbyTicket := range file.nearbyTickets {
@@ -157,6 +149,14 @@ func part2(inputfile string) int {
 		}
 	}
 	file.nearbyTickets = validTickets
+
+	// Add every field to every possibility index (probably better way to do this)
+	possibilities := [][]field{}
+	for i := 0; i < len(file.fields); i++ {
+		cpy := []field{}
+		cpy = append(cpy, file.fields...)
+		possibilities = append(possibilities, cpy)
+	}
 
 	// For each nearby ticket update possibilies with only valid fields
 	for _, thisTicket := range file.nearbyTickets {

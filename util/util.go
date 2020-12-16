@@ -74,17 +74,6 @@ func Abs(x int) int {
 	return x
 }
 
-// IsIn will return true if val is found in slice, false otherwise
-func IsIn(slice []string, val string) bool {
-	for _, v := range slice {
-		if v == val {
-			return true
-		}
-	}
-
-	return false
-}
-
 // AllInMap will return true if all elements of slice are found in map, false otherwise
 func AllInMap(slice []string, m map[string]string) bool {
 	for _, v := range slice {
