@@ -5,12 +5,6 @@ import (
 	"testing"
 )
 
-func TestParseFile(t *testing.T) {
-	file := parsefile("sample.txt")
-	fmt.Printf("%+v\n", file)
-
-}
-
 func TestP1(t *testing.T) {
 	got := part1("sample.txt")
 	fmt.Printf("Got: %v\n", got)

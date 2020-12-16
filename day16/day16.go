@@ -3,7 +3,6 @@ package day16
 import (
 	"aoc2020/util"
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -51,26 +50,15 @@ func parsefile(inputfile string) fileT {
 			}
 
 			f := NewField()
+			tokens := util.ParseTokens(line)
+			f.name = tokens.Strs[0]
 
-			lineS := strings.Split(line, ": ")
-			f.name = lineS[0]
-
-			valsS := strings.Split(lineS[1], " or ")
-
-			minMaxS := strings.Split(valsS[0], "-")
-			min, _ := strconv.Atoi(minMaxS[0])
-			max, _ := strconv.Atoi(minMaxS[1])
-
-			for i := min; i <= max; i++ {
+			for i := tokens.Ints[0]; i <= tokens.Ints[1]; i++ {
 				file.validValues[i] = struct{}{}
 				f.validValues[i] = struct{}{}
 			}
 
-			minMaxS = strings.Split(valsS[1], "-")
-			min, _ = strconv.Atoi(minMaxS[0])
-			max, _ = strconv.Atoi(minMaxS[1])
-
-			for i := min; i <= max; i++ {
+			for i := tokens.Ints[2]; i <= tokens.Ints[3]; i++ {
 				file.validValues[i] = struct{}{}
 				f.validValues[i] = struct{}{}
 			}
@@ -84,25 +72,13 @@ func parsefile(inputfile string) fileT {
 				onMyTicket = false
 				continue
 			}
-			valsS := strings.Split(line, ",")
-
-			for _, val := range valsS {
-				num, _ := strconv.Atoi(val)
-
-				file.yourTicket = append(file.yourTicket, num)
-			}
+			tokens := util.ParseTokens(line)
+			file.yourTicket = tokens.Ints
 		}
 
 		if onNearby {
-			thisTicket := []int{}
-			valsS := strings.Split(line, ",")
-
-			for _, val := range valsS {
-				num, _ := strconv.Atoi(val)
-				thisTicket = append(thisTicket, num)
-			}
-
-			file.nearbyTickets = append(file.nearbyTickets, thisTicket)
+			tokens := util.ParseTokens(line)
+			file.nearbyTickets = append(file.nearbyTickets, tokens.Ints)
 		}
 
 		if strings.HasPrefix(line, "nearby tickets") {
