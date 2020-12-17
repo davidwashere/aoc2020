@@ -1,6 +1,8 @@
 package util
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Grid represents an infinitly growable (memory dependeant) grid of both positive
 // and negative coords with string values
@@ -20,11 +22,16 @@ type Grid struct {
 
 	// False until a value is set into the grid
 	initialized bool
+
+	// When bounds are locked minX, minY, maxX, maxY are not updated dynamically
+	// Setting values outside the bounds are ignored
+	// Getting values outside the bounds returns default value
+	BoundsLocked bool
 }
 
 // NewGrid .
-func NewGrid(defaultValue string) Grid {
-	return Grid{
+func NewGrid(defaultValue string) *Grid {
+	return &Grid{
 		data: map[int]map[int]string{},
 		def:  defaultValue,
 		maxX: MinInt,
@@ -37,7 +44,7 @@ func NewGrid(defaultValue string) Grid {
 // NewGridFromFile loads the file into a grid
 // it assumes each character in the file represents a data point
 // data on the first line is row 0, data on the second line is row 1, and so on
-func NewGridFromFile(filename string, defaultValue string) Grid {
+func NewGridFromFile(filename string, defaultValue string) *Grid {
 	grid := NewGrid(defaultValue)
 
 	x := 0
@@ -187,4 +194,61 @@ func (g *Grid) Dump() {
 	}
 	fmt.Printf("\u2518") // Bot right
 	fmt.Println()
+}
+
+// Grow expands the grid min's and max's by amt
+func (g *Grid) Grow(amt int) {
+	g.minX -= amt
+	g.minY -= amt
+	g.maxX += amt
+	g.maxY += amt
+}
+
+func (g *Grid) GetMinX() int {
+	return g.minX
+}
+
+func (g *Grid) GetMinY() int {
+	return g.minY
+}
+
+func (g *Grid) GetMaxX() int {
+	return g.maxX
+}
+
+func (g *Grid) GetMaxY() int {
+	return g.maxY
+}
+
+func (g *Grid) SetExtents(minX, minY, maxX, maxY int) {
+	g.minX = minX
+	g.minY = minY
+	g.maxX = maxX
+	g.maxY = maxY
+}
+
+// SetBounds will set and lock the bounds of the grid
+func (g *Grid) SetBounds(minX, minY, maxX, maxY int) error {
+	if minX > maxX || minY > maxY {
+		return fmt.Errorf("Invalid bounds, min can be greater then max")
+	}
+
+	g.minX = minX
+	g.minY = minY
+	g.maxX = maxX
+	g.maxY = maxY
+
+	g.LockBounds()
+
+	return nil
+}
+
+// LockBounds locks the bounds of the grid
+func (g *Grid) LockBounds() {
+	g.BoundsLocked = true
+}
+
+// UnlockBounds unlocks the bounds of the grid
+func (g *Grid) UnlockBounds() {
+	g.BoundsLocked = false
 }
