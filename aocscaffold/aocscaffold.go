@@ -18,43 +18,26 @@ import (
 	"fmt"
 )
 
-type thing struct {
-}
-
-func parseFile(inputfile string) []thing {
+func part1(inputfile string) int {
 	data, _ := util.ReadFileToStringSlice(inputfile)
 	// data, _ := util.ReadFileToIntSlice(inputfile)
 	// data, _ := util.ReadFileToStringSliceWithDelim(inputfile, "\n\n")
-	// data, _ := util.ReadFileToStringSliceWithDelim(inputfile, ",")
 
-	things := []thing{}
 	for _, line := range data {
-		thing := thing{}
+		tokens := util.ParseTokens(line)
+		// ints := util.ParseInts(line)
+		// strs := util.ParseStrs(line)
+		// words := util.ParseWords(line)
 
-		// parse stuff
-		fmt.Println(line)
-
-		things = append(things, thing)
+		fmt.Println(tokens)
 	}
 
-	return things
-}
+	result := 0
 
-func part1(inputfile string) int {
-	// things := parseFile(inputfile)
-
-	// for _, thing := range things {
-	// }
-
-	return 0
+	return result
 }
 
 func part2(inputfile string) int {
-	// things := parseFile(inputfile)
-
-	// for _, thing := range things {
-	// }
-
 	return 0
 }
 `
