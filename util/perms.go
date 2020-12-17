@@ -3,13 +3,13 @@ package util
 import "reflect"
 
 // PermsString same as `Perms` but internally converts data to `string`
-func PermsString(inSlice interface{}, f func([]string)) {
-	PermsStringOfLen(inSlice, -1, f)
+func PermsString(inSlice interface{}, repeat bool, f func([]string)) {
+	PermsStringOfLen(inSlice, -1, repeat, f)
 }
 
 // PermsStringOfLen same as `PermsOfLen` but internally converts data to `string`
-func PermsStringOfLen(inSlice interface{}, maxlen int, f func([]string)) {
-	PermsOfLen(inSlice, maxlen, func(perm []interface{}) {
+func PermsStringOfLen(inSlice interface{}, maxlen int, repeat bool, f func([]string)) {
+	PermsOfLen(inSlice, maxlen, repeat, func(perm []interface{}) {
 		conv := make([]string, len(perm))
 		for i := 0; i < len(perm); i++ {
 			conv[i] = perm[i].(string)
@@ -18,13 +18,29 @@ func PermsStringOfLen(inSlice interface{}, maxlen int, f func([]string)) {
 	})
 }
 
+// PermsInt same as `Perms` but internally converts data to `int`
+func PermsInt(inSlice interface{}, repeat bool, f func([]int)) {
+	PermsIntOfLen(inSlice, -1, repeat, f)
+}
+
+// PermsIntOfLen same as `PermsOfLen` but internally converts data to `int`
+func PermsIntOfLen(inSlice interface{}, maxlen int, repeat bool, f func([]int)) {
+	PermsOfLen(inSlice, maxlen, repeat, func(perm []interface{}) {
+		conv := make([]int, len(perm))
+		for i := 0; i < len(perm); i++ {
+			conv[i] = perm[i].(int)
+		}
+		f(conv)
+	})
+}
+
 // Perms will call `f` for every permutation of the items in `inSlice`
-func Perms(inSlice interface{}, f func([]interface{})) {
-	PermsOfLen(inSlice, -1, f)
+func Perms(inSlice interface{}, repeat bool, f func([]interface{})) {
+	PermsOfLen(inSlice, -1, repeat, f)
 }
 
 // PermsOfLen same as `Perms` but will limit permutations to the specific length
-func PermsOfLen(inSlice interface{}, maxlen int, f func([]interface{})) {
+func PermsOfLen(inSlice interface{}, maxlen int, repeat bool, f func([]interface{})) {
 	slice, success := convToType(inSlice, reflect.Slice)
 
 	if !success {
@@ -38,11 +54,19 @@ func PermsOfLen(inSlice interface{}, maxlen int, f func([]interface{})) {
 		convertedData[i] = slice.Index(i).Interface()
 	}
 
-	if maxlen > length || maxlen < 0 {
+	if maxlen < 0 {
 		maxlen = length
 	}
 
-	perms(convertedData, nil, maxlen, f)
+	if repeat {
+		permsRepeat(convertedData, nil, maxlen, f)
+	} else {
+		if maxlen > length {
+			maxlen = length
+		}
+		perms(convertedData, nil, maxlen, f)
+
+	}
 }
 
 // perms will recursively find every permutation for `data`, and when a permutation is
@@ -68,23 +92,48 @@ func perms(data []interface{}, ans []interface{}, l int, f func([]interface{})) 
 	}
 }
 
+// permsRepeat .
+func permsRepeat(data []interface{}, ans []interface{}, l int, f func([]interface{})) {
+	for i := 0; i < len(data); i++ {
+		var newans []interface{}
+		newans = append(newans, ans...)
+		newans = append(newans, data[i])
+
+		if len(newans) == l {
+			f(newans)
+		} else {
+			permsRepeat(data, newans, l, f)
+		}
+	}
+}
+
 // CharPerms same as `Perms` but looks at characters inside a string (instead of expecting a slice)
-func CharPerms(str string, f func(string)) {
-	charPerms(str, "", len(str), f)
+// set repeat to true if chars can repeat, false otherwise
+func PermsChar(str string, repeat bool, f func(string)) {
+	PermsCharOfLen(str, -1, repeat, f)
 }
 
 // CharPermsOfLen same as `CharPerms` but will limit permutations to the specific length
-func CharPermsOfLen(str string, maxlen int, f func(string)) {
-	if maxlen > len(str) {
+// set repeat to true if chars can repeat, false otherwise
+func PermsCharOfLen(str string, maxlen int, repeat bool, f func(string)) {
+	if maxlen < 0 {
 		maxlen = len(str)
 	}
-	charPerms(str, "", maxlen, f)
+
+	if repeat {
+		permsCharRepeat(str, "", maxlen, f)
+	} else {
+		if maxlen > len(str) {
+			maxlen = len(str)
+		}
+		permsChar(str, "", maxlen, f)
+	}
 }
 
 // charPerms will recursively find every permutation for `data`, and when a permutation is
 // found will call `f`.  Permutation length is limited by `l`
 // ref: https://www.geeksforgeeks.org/print-all-the-permutations-of-a-string-without-repetition-using-collections-in-java/
-func charPerms(str string, ans string, l int, f func(string)) {
+func permsChar(str string, ans string, l int, f func(string)) {
 	if len(ans) == l {
 		f(ans)
 		return
@@ -93,6 +142,19 @@ func charPerms(str string, ans string, l int, f func(string)) {
 	for i := 0; i < len(str); i++ {
 		chr := string(str[i])
 		ros := str[0:i] + str[i+1:]
-		charPerms(ros, ans+chr, l, f)
+		permsChar(ros, ans+chr, l, f)
+	}
+}
+
+// permsCharRepeat
+func permsCharRepeat(str string, ans string, l int, f func(string)) {
+	for i := 0; i < len(str); i++ {
+		newans := ans + string(str[i])
+
+		if len(newans) == l {
+			f(newans)
+		} else {
+			permsCharRepeat(str, newans, l, f)
+		}
 	}
 }

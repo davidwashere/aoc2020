@@ -220,17 +220,9 @@ func (g *Grid) GetMaxY() int {
 	return g.maxY
 }
 
-func (g *Grid) SetExtents(minX, minY, maxX, maxY int) {
-	g.minX = minX
-	g.minY = minY
-	g.maxX = maxX
-	g.maxY = maxY
-}
-
-// SetBounds will set and lock the bounds of the grid
-func (g *Grid) SetBounds(minX, minY, maxX, maxY int) error {
+func (g *Grid) SetExtents(minX, minY, maxX, maxY int) error {
 	if minX > maxX || minY > maxY {
-		return fmt.Errorf("Invalid bounds, min can be greater then max")
+		return fmt.Errorf("Invalid extents, min cannot be greater then max")
 	}
 
 	g.minX = minX
@@ -238,6 +230,16 @@ func (g *Grid) SetBounds(minX, minY, maxX, maxY int) error {
 	g.maxX = maxX
 	g.maxY = maxY
 
+	return nil
+}
+
+// SetBounds will set and lock the grid's min and max ounds of the grid
+func (g *Grid) SetBounds(minX, minY, maxX, maxY int) error {
+
+	err := g.SetExtents(minX, minY, maxX, maxY)
+	if err != nil {
+		return err
+	}
 	g.LockBounds()
 
 	return nil

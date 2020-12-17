@@ -2,7 +2,6 @@ package day17
 
 import (
 	"aoc2020/util"
-	"fmt"
 )
 
 // .
@@ -263,11 +262,6 @@ func part2(inputfile string) int {
 	grids := map[int]map[int]*util.Grid{}
 	grids[0] = map[int]*util.Grid{}
 	grids[0][0] = util.NewGridFromFile(inputfile, INACTIVE)
-
-	for z, grid := range grids {
-		fmt.Printf("[%v] %+v\n", z, grid)
-	}
-	fmt.Println()
 
 	o := grids[0][0]
 	extents := 0
