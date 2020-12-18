@@ -100,10 +100,14 @@ func _createDimKey(dims ...int) string {
 	return result
 }
 
+// GetDimensions Returns the number of explicity defined dimensions on top of x and y
+// ie: for a 3d grid, GetDimensions will return 1, 4d grid will return 2
 func (g *InfinityGrid) GetDimensions() int {
 	return len(g.dimMinMax)
 }
 
+// AddDimension will add another 'dimension' to the Grid
+// This can also be done by setting a value with a coordinate in the desired dimension
 func (g *InfinityGrid) AddDimension() int {
 	minMax := newInfinityGridMinMax()
 	minMax.min = 0
@@ -115,27 +119,35 @@ func (g *InfinityGrid) AddDimension() int {
 
 // Set .
 func (g *InfinityGrid) Set(val string, x, y int, dims ...int) {
-	g.xMinMax.min = Min(g.xMinMax.min, x)
-	g.xMinMax.max = Max(g.xMinMax.max, x)
-	g.yMinMax.min = Min(g.yMinMax.min, y)
-	g.yMinMax.max = Max(g.yMinMax.max, y)
+	if !g.BoundsLocked {
+		g.xMinMax.min = Min(g.xMinMax.min, x)
+		g.xMinMax.max = Max(g.xMinMax.max, x)
+		g.yMinMax.min = Min(g.yMinMax.min, y)
+		g.yMinMax.max = Max(g.yMinMax.max, y)
 
-	for i, dim := range dims {
-		if i > len(g.dimMinMax)-1 {
-			g.dimMinMax = append(g.dimMinMax, newInfinityGridMinMax())
+		for i, dim := range dims {
+			if i > len(g.dimMinMax)-1 {
+				g.dimMinMax = append(g.dimMinMax, newInfinityGridMinMax())
+			}
+			g.dimMinMax[i].min = Min(g.dimMinMax[i].min, dim)
+			g.dimMinMax[i].max = Max(g.dimMinMax[i].max, dim)
 		}
-		g.dimMinMax[i].min = Min(g.dimMinMax[i].min, dim)
-		g.dimMinMax[i].max = Max(g.dimMinMax[i].max, dim)
 	}
 
 	dimKey := _createDimKey(dims...)
 	data := g.data
 
 	if _, ok := data[dimKey]; !ok {
+		if g.BoundsLocked {
+			return // dim doesn't exist, do not create it if bounds locked
+		}
 		data[dimKey] = map[int]map[int]string{}
 	}
 
 	if _, ok := data[dimKey][x]; !ok {
+		if g.BoundsLocked {
+			return // x doesn't exist, do not create it if bounds locked
+		}
 		data[dimKey][x] = map[int]string{}
 	}
 
@@ -199,6 +211,47 @@ func (g *InfinityGrid) VisitAll(visitFunc func(val string, x int, y int, dims ..
 	}
 }
 
+// VisitAll2D will assume all dimensions behind x, y are 0
+func (g *InfinityGrid) VisitAll2D(visitFunc func(val string, x int, y int)) {
+	for y := g.yMinMax.min; y <= g.yMinMax.max; y++ {
+		for x := g.xMinMax.min; x <= g.xMinMax.max; x++ {
+			visitFunc(g.Get(x, y), x, y)
+		}
+	}
+}
+
+// VisitAll3D will assume all dimensions behind x, y, z are 0
+func (g *InfinityGrid) VisitAll3D(visitFunc func(val string, x int, y int, z int)) {
+	if g.GetDimensions() <= 0 {
+		return
+	}
+
+	for z := g.dimMinMax[0].min; z <= g.dimMinMax[0].max; z++ {
+		for y := g.yMinMax.min; y <= g.yMinMax.max; y++ {
+			for x := g.xMinMax.min; x <= g.xMinMax.max; x++ {
+				visitFunc(g.Get(x, y, z), x, y, z)
+			}
+		}
+	}
+}
+
+// VisitAll4D will assume all dimensions behind x, y, z, w are 0
+func (g *InfinityGrid) VisitAll4D(visitFunc func(val string, x int, y int, z int, w int)) {
+	if g.GetDimensions() <= 1 {
+		return
+	}
+
+	for w := g.dimMinMax[1].min; w <= g.dimMinMax[1].max; w++ {
+		for z := g.dimMinMax[0].min; z <= g.dimMinMax[0].max; z++ {
+			for y := g.yMinMax.min; y <= g.yMinMax.max; y++ {
+				for x := g.xMinMax.min; x <= g.xMinMax.max; x++ {
+					visitFunc(g.Get(x, y, z, w), x, y, z, w)
+				}
+			}
+		}
+	}
+}
+
 func calcAllDims(dimMinMax []infinityGridMinMax) [][]int {
 	allDims := &[][]int{}
 
@@ -236,18 +289,28 @@ func (g *InfinityGrid) Grow(amt int) {
 	}
 }
 
-func (g *InfinityGrid) GetMinX() int {
-	return g.xMinMax.min
+// func (g *InfinityGrid) GetMinX() int {
+// 	return g.xMinMax.min
+// }
+
+// func (g *InfinityGrid) GetMinY() int {
+// 	return g.yMinMax.min
+// }
+
+// func (g *InfinityGrid) GetMaxX() int {
+// 	return g.xMinMax.max
+// }
+
+// func (g *InfinityGrid) GetMaxY() int {
+// 	return g.yMinMax.max
+// }
+
+// LockBounds locks the bounds of the grid
+func (g *InfinityGrid) LockBounds() {
+	g.BoundsLocked = true
 }
 
-func (g *InfinityGrid) GetMinY() int {
-	return g.yMinMax.min
-}
-
-func (g *InfinityGrid) GetMaxX() int {
-	return g.xMinMax.max
-}
-
-func (g *InfinityGrid) GetMaxY() int {
-	return g.yMinMax.max
+// UnlockBounds unlocks the bounds of the grid
+func (g *InfinityGrid) UnlockBounds() {
+	g.BoundsLocked = false
 }

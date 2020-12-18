@@ -25,7 +25,7 @@ func TestP1_Actual(t *testing.T) {
 }
 
 func TestOccupiedSeats(t *testing.T) {
-	grid := util.NewGridFromFile("sample2.txt", "X")
+	grid := util.NewInfinityGridFromFile("sample2.txt", "X")
 	got := adjSeenOccupiedSeats(grid, 3, 4)
 	fmt.Printf("Got: %v\n", got)
 	want := 8

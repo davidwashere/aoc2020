@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -132,17 +131,39 @@ func TestAllDims(t *testing.T) {
 	vf(t, allDims[8][1], 1)
 }
 
-func TestVisitAll(t *testing.T) {
+// func TestVisitAll(t *testing.T) {
+// 	g := NewInfinityGrid(".")
+// 	g.Set("A", 1, 1, 0)
+// 	g.Set("B", -1, -1, 0)
+// 	// g.Set("A", 1, 1, 0, 0)
+// 	// g.Set("B", -1, -1, 0, 0)
+// 	g.Set("C", -1, -1, 1, 1)
+// 	g.Set("D", -1, -1, -1, -1)
+
+// 	g.VisitAll(func(val string, x, y int, dims ...int) {
+// 		fmt.Printf("%v,%v,%v: %v\n", x, y, dims, val)
+
+// 	})
+// }
+
+func TestLockBounds(t *testing.T) {
 	g := NewInfinityGrid(".")
-	g.Set("A", 1, 1, 0)
-	g.Set("B", -1, -1, 0)
-	// g.Set("A", 1, 1, 0, 0)
-	// g.Set("B", -1, -1, 0, 0)
-	g.Set("C", -1, -1, 1, 1)
-	g.Set("D", -1, -1, -1, -1)
+	g.Set("A", 0, 0)
+	g.LockBounds()
+	g.Set("C", 1, 1)
+	g.Set("B", -1, -1)
 
-	g.VisitAll(func(val string, x, y int, dims ...int) {
-		fmt.Printf("%v,%v,%v: %v\n", x, y, dims, val)
-
+	g.VisitAll2D(func(val string, x, y int) {
+		vf(t, val, "A")
 	})
+
+	vf(t, g.Height(), 1)
+	vf(t, g.Width(), 1)
+
+	g.UnlockBounds()
+	g.Set("C", 1, 1)
+	g.Set("B", -1, -1)
+
+	vf(t, g.Height(), 3)
+	vf(t, g.Width(), 3)
 }

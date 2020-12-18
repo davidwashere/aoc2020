@@ -24,12 +24,12 @@ var adjVectors = []util.Vector{
 }
 
 func part1(inputfile string) int {
-	grid := util.NewGridFromFile(inputfile, "X") // X = out of bounds
+	grid := util.NewInfinityGridFromFile(inputfile, "X") // X = out of bounds
 
 	for {
 		changes := []change{}
 
-		grid.VisitAll(func(x int, y int, val string) {
+		grid.VisitAll(func(val string, x int, y int, dims ...int) {
 			adjOccSeats := adjOccupiedSeats(grid, x, y)
 			if val == "L" {
 				if adjOccSeats == 0 {
@@ -49,12 +49,12 @@ func part1(inputfile string) int {
 		}
 
 		for _, c := range changes {
-			grid.Set(c.x, c.y, c.val)
+			grid.Set(c.val, c.x, c.y)
 		}
 	}
 
 	occSeats := 0
-	grid.VisitAll(func(x int, y int, val string) {
+	grid.VisitAll(func(val string, x int, y int, dims ...int) {
 		if val == "#" {
 			occSeats++
 		}
@@ -65,7 +65,7 @@ func part1(inputfile string) int {
 
 // adjOccupiedSeats counts number of occupied seats immediatly surrounding
 // the x, y coord
-func adjOccupiedSeats(grid util.Grid, x, y int) int {
+func adjOccupiedSeats(grid *util.InfinityGrid, x, y int) int {
 	occSeats := 0
 	for _, v := range adjVectors {
 		if grid.Get(v.Apply(x, y)) == "#" {
@@ -77,11 +77,11 @@ func adjOccupiedSeats(grid util.Grid, x, y int) int {
 }
 
 func part2(inputfile string) int {
-	grid := util.NewGridFromFile(inputfile, "X")
+	grid := util.NewInfinityGridFromFile(inputfile, "X") // X = out of bounds
 
 	for {
 		changes := []change{}
-		grid.VisitAll(func(x int, y int, val string) {
+		grid.VisitAll(func(val string, x int, y int, dims ...int) {
 			adjOctSeats := adjSeenOccupiedSeats(grid, x, y)
 			if val == "L" {
 				if adjOctSeats == 0 {
@@ -101,12 +101,12 @@ func part2(inputfile string) int {
 		}
 
 		for _, c := range changes {
-			grid.Set(c.x, c.y, c.val)
+			grid.Set(c.val, c.x, c.y)
 		}
 	}
 
 	occSeats := 0
-	grid.VisitAll(func(x int, y int, val string) {
+	grid.VisitAll(func(val string, x int, y int, dims ...int) {
 		if val == "#" {
 			occSeats++
 		}
@@ -117,7 +117,7 @@ func part2(inputfile string) int {
 
 // adjSeenOccupiedSeats counts number of occupied seats 'visible' to
 // the x, y coord
-func adjSeenOccupiedSeats(grid util.Grid, x, y int) int {
+func adjSeenOccupiedSeats(grid *util.InfinityGrid, x, y int) int {
 	occSeats := 0
 	for _, v := range adjVectors {
 		curX, curY := v.Apply(x, y)
