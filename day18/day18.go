@@ -2,7 +2,6 @@ package day18
 
 import (
 	"aoc2020/util"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -56,16 +55,11 @@ func (s *OpStack) Top() string {
 
 func part1(inputfile string) int {
 	data, _ := util.ReadFileToStringSlice(inputfile)
-	// data, _ := util.ReadFileToIntSlice(inputfile)
-	// data, _ := util.ReadFileToStringSliceWithDelim(inputfile, "\n\n")
-	// grid := util.NewInfinityGridFromFile(inputfile, ".")
 
 	sum := 0
 	for _, line := range data {
 
 		result := calcLine(line)
-
-		fmt.Println(result)
 
 		sum += result
 	}
@@ -136,6 +130,105 @@ func calcLine(line string) int {
 	return val
 }
 
+type GStack []string
+
+func (o *GStack) Pop() string {
+	index := len(*o) - 1
+	ele := (*o)[index]
+	*o = (*o)[:index]
+	return ele
+}
+
+func (o *GStack) Push(i string) {
+	*o = append(*o, i)
+}
+
+func (o *GStack) Empty() bool {
+	return len(*o) == 0
+}
+
+func (o *GStack) Peek() string {
+	return (*o)[len(*o)-1]
+}
+
 func part2(inputfile string) int {
-	return 0
+	data, _ := util.ReadFileToStringSlice(inputfile)
+
+	sum := 0
+	for _, line := range data {
+		sum += calcLineP2(line)
+	}
+
+	return sum
+}
+
+func calcLineP2(line string) int {
+	line = strings.ReplaceAll(line, " ", "")
+	intRe := regexp.MustCompile("[0-9]+")
+	parenRe := regexp.MustCompile("[()]+")
+	opRe := regexp.MustCompile("[*+]+")
+
+	var opStack GStack
+	var outStack GStack
+
+	for _, cbyte := range line {
+		char := string(cbyte)
+		if intRe.MatchString(char) {
+			// is num
+			outStack.Push(char)
+
+		} else if parenRe.MatchString(char) {
+			// is paran
+			if char == "(" {
+				opStack.Push("(")
+			} else if char == ")" {
+				for opStack.Peek() != "(" {
+					outStack.Push(opStack.Pop())
+				}
+				opStack.Pop()
+			}
+
+		} else if opRe.MatchString(char) {
+			// is + or -
+			if opStack.Empty() {
+				opStack.Push(char)
+				continue
+			}
+			// + higher then *
+			for !opStack.Empty() && (char == "*" && opStack.Peek() == "+") {
+				outStack.Push(opStack.Pop())
+			}
+
+			opStack.Push(char)
+		}
+	}
+
+	for !opStack.Empty() {
+		outStack.Push(opStack.Pop())
+	}
+
+	// fmt.Println(outStack)
+
+	var numStack Stack
+	for i := 0; i < len(outStack); i++ {
+		char := string(outStack[i])
+		if intRe.MatchString(char) {
+			num, _ := strconv.Atoi(char)
+			numStack.Push(num)
+			continue
+		}
+
+		if opRe.MatchString(char) {
+			right := numStack.Pop()
+			left := numStack.Pop()
+
+			if char == "*" {
+				numStack.Push(left * right)
+			} else if char == "+" {
+				numStack.Push(left + right)
+			}
+		}
+	}
+
+	return numStack.Pop()
 }
