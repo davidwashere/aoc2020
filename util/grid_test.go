@@ -120,10 +120,6 @@ func TestHeight(t *testing.T) {
 	if want != got {
 		t.Errorf("Expected %v but got %v", want, got)
 	}
-
-	if want != got {
-		t.Errorf("Expected %v but got %v", want, got)
-	}
 }
 
 func TestWidth(t *testing.T) {

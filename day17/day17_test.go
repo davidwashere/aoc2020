@@ -8,11 +8,11 @@ import (
 
 func TestCount(t *testing.T) {
 
-	grids := map[int]*util.Grid{}
-	grids[0] = util.NewGridFromFile("sample.txt", INACTIVE)
+	// grids := map[int]*util.Grid{}
+	// grids[0] = util.NewGridFromFile("sample.txt", INACTIVE)
 
-	count := activeNeightbors(grids, C3D{1, 1, 0})
-	fmt.Println(count)
+	// count := activeNeightbors(grids, coord{1, 1, 0, 0})
+	// fmt.Println(count)
 }
 
 func TestPointers(t *testing.T) {
