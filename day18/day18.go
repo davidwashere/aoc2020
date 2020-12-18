@@ -7,52 +7,6 @@ import (
 	"strings"
 )
 
-type Stack []int
-
-func (s *Stack) IsEmpty() bool {
-	return len(*s) == 0
-}
-
-func (s *Stack) Push(i int) {
-	*s = append(*s, i)
-}
-
-func (s *Stack) Pop() int {
-	if s.IsEmpty() {
-		panic("Oh noes")
-	} else {
-		index := len(*s) - 1
-		ele := (*s)[index]
-		*s = (*s)[:index]
-		return ele
-	}
-}
-
-type OpStack []string
-
-func (s *OpStack) IsEmpty() bool {
-	return len(*s) == 0
-}
-
-func (s *OpStack) Push(i string) {
-	*s = append(*s, i)
-}
-
-func (s *OpStack) Pop() string {
-	if s.IsEmpty() {
-		panic("Oh noes")
-	} else {
-		index := len(*s) - 1
-		ele := (*s)[index]
-		*s = (*s)[:index]
-		return ele
-	}
-}
-
-func (s *OpStack) Top() string {
-	return (*s)[len(*s)-1]
-}
-
 func part1(inputfile string) int {
 	data, _ := util.ReadFileToStringSlice(inputfile)
 
@@ -73,8 +27,8 @@ func calcLine(line string) int {
 	parenRe := regexp.MustCompile("[()]+")
 	opRe := regexp.MustCompile("[*+]+")
 
-	var numStack Stack
-	var opStack OpStack
+	numStack := util.NewIntStack()
+	opStack := util.NewStringStack()
 
 	for _, cbyte := range line {
 		char := string(cbyte)
@@ -84,7 +38,7 @@ func calcLine(line string) int {
 			if numStack.IsEmpty() {
 				numStack.Push(num)
 			} else {
-				if opStack.Top() == "(" {
+				if opStack.Peek() == "(" {
 					numStack.Push(num)
 				} else {
 					op := opStack.Pop()
@@ -102,7 +56,7 @@ func calcLine(line string) int {
 				opStack.Push("(")
 			} else if char == ")" {
 				op := opStack.Pop()
-				if !opStack.IsEmpty() && (opStack.Top() == "+" || opStack.Top() == "*") {
+				if !opStack.IsEmpty() && (opStack.Peek() == "+" || opStack.Peek() == "*") {
 					op = opStack.Pop()
 					last := numStack.Pop()
 					lastLast := numStack.Pop()
@@ -130,27 +84,6 @@ func calcLine(line string) int {
 	return val
 }
 
-type GStack []string
-
-func (o *GStack) Pop() string {
-	index := len(*o) - 1
-	ele := (*o)[index]
-	*o = (*o)[:index]
-	return ele
-}
-
-func (o *GStack) Push(i string) {
-	*o = append(*o, i)
-}
-
-func (o *GStack) Empty() bool {
-	return len(*o) == 0
-}
-
-func (o *GStack) Peek() string {
-	return (*o)[len(*o)-1]
-}
-
 func part2(inputfile string) int {
 	data, _ := util.ReadFileToStringSlice(inputfile)
 
@@ -168,8 +101,8 @@ func calcLineP2(line string) int {
 	parenRe := regexp.MustCompile("[()]+")
 	opRe := regexp.MustCompile("[*+]+")
 
-	var opStack GStack
-	var outStack GStack
+	opStack := util.NewStringStack()
+	outStack := util.NewStringStack()
 
 	for _, cbyte := range line {
 		char := string(cbyte)
@@ -180,7 +113,7 @@ func calcLineP2(line string) int {
 		} else if parenRe.MatchString(char) {
 			// is paran
 			if char == "(" {
-				opStack.Push("(")
+				opStack.Push(char)
 			} else if char == ")" {
 				for opStack.Peek() != "(" {
 					outStack.Push(opStack.Pop())
@@ -190,12 +123,12 @@ func calcLineP2(line string) int {
 
 		} else if opRe.MatchString(char) {
 			// is + or -
-			if opStack.Empty() {
+			if opStack.IsEmpty() {
 				opStack.Push(char)
 				continue
 			}
 			// + higher then *
-			for !opStack.Empty() && (char == "*" && opStack.Peek() == "+") {
+			for !opStack.IsEmpty() && (char == "*" && opStack.Peek() == "+") {
 				outStack.Push(opStack.Pop())
 			}
 
@@ -203,13 +136,13 @@ func calcLineP2(line string) int {
 		}
 	}
 
-	for !opStack.Empty() {
+	for !opStack.IsEmpty() {
 		outStack.Push(opStack.Pop())
 	}
 
 	// fmt.Println(outStack)
 
-	var numStack Stack
+	numStack := util.NewIntStack()
 	for i := 0; i < len(outStack); i++ {
 		char := string(outStack[i])
 		if intRe.MatchString(char) {
