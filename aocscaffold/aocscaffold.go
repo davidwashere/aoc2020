@@ -22,6 +22,7 @@ func part1(inputfile string) int {
 	data, _ := util.ReadFileToStringSlice(inputfile)
 	// data, _ := util.ReadFileToIntSlice(inputfile)
 	// data, _ := util.ReadFileToStringSliceWithDelim(inputfile, "\n\n")
+	// grid := util.NewInfinityGridFromFile(inputfile, ".")
 
 	for _, line := range data {
 		tokens := util.ParseTokens(line)
