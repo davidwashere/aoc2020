@@ -167,3 +167,17 @@ func TestLockBounds(t *testing.T) {
 	vf(t, g.Height(), 3)
 	vf(t, g.Width(), 3)
 }
+
+func TestSet2DExtents(t *testing.T) {
+	g := NewInfinityGrid(".")
+	g.Set("A", 0, 0)
+	g.Set("B", 3, 3)
+	g.SetExtents(-5, -5, 5, 5)
+	vf(t, g.Height(), 11)
+	vf(t, g.Width(), 11)
+
+	g.SetExtents(0, 0, 2, 2)
+	vf(t, g.Get(3, 3), ".")
+	g.SetExtents(0, 0, 4, 4)
+	vf(t, g.Get(3, 3), "B")
+}

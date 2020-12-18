@@ -1,7 +1,6 @@
 package day17
 
 import (
-	"aoc2020/util"
 	"fmt"
 	"testing"
 )
@@ -15,31 +14,31 @@ func TestCount(t *testing.T) {
 	// fmt.Println(count)
 }
 
-func TestPointers(t *testing.T) {
-	grids := map[int]*util.Grid{}
-	// grids[0] = util.NewGridFromFile("sample.txt", INACTIVE)
+// func TestPointers(t *testing.T) {
+// 	grids := map[int]*util.Grid{}
+// 	// grids[0] = util.NewGridFromFile("sample.txt", INACTIVE)
 
-	grids[0] = util.NewGridFromFile("sample.txt", INACTIVE)
+// 	grids[0] = util.NewGridFromFile("sample.txt", INACTIVE)
 
-	for z, grid := range grids {
-		fmt.Printf("[%v] %+v\n", z, grid)
-	}
-	fmt.Println()
+// 	for z, grid := range grids {
+// 		fmt.Printf("[%v] %+v\n", z, grid)
+// 	}
+// 	fmt.Println()
 
-	grids[1] = util.NewGrid(INACTIVE)
-	// grids[1] = util.NewGrid(INACTIVE)
-	// g := grids[1]
-	// g := util.NewGrid(INACTIVE)
-	grids[1].SetExtents(-5, -5, 5, 5)
-	grids[1].Set(1, 1, "h")
-	// g.Set(1, 1, "h")
-	// grids[1] = g
+// 	grids[1] = util.NewGrid(INACTIVE)
+// 	// grids[1] = util.NewGrid(INACTIVE)
+// 	// g := grids[1]
+// 	// g := util.NewGrid(INACTIVE)
+// 	grids[1].SetExtents(-5, -5, 5, 5)
+// 	grids[1].Set(1, 1, "h")
+// 	// g.Set(1, 1, "h")
+// 	// grids[1] = g
 
-	for z, grid := range grids {
-		fmt.Printf("[%v] %+v\n", z, grid)
-	}
-	fmt.Println()
-}
+// 	for z, grid := range grids {
+// 		fmt.Printf("[%v] %+v\n", z, grid)
+// 	}
+// 	fmt.Println()
+// }
 
 func TestP1(t *testing.T) {
 	got := part1("sample.txt")

@@ -4,12 +4,7 @@ import (
 	"fmt"
 )
 
-type infinityGridMinMax struct {
-	min int
-	max int
-}
-
-// InfinityGrid grid with infinte dimensions in all directions
+// InfinityGrid grid with infinite dimensions in all directions
 // 2d, 3d, ... 11d, doesn't matter (memory constrained)
 type InfinityGrid struct {
 	// All Data Points
@@ -35,6 +30,11 @@ type InfinityGrid struct {
 	// Setting values outside the bounds are ignored
 	// Getting values outside the bounds returns default value
 	BoundsLocked bool
+}
+
+type infinityGridMinMax struct {
+	min int
+	max int
 }
 
 func newInfinityGridMinMax() infinityGridMinMax {
@@ -108,13 +108,11 @@ func (g *InfinityGrid) GetDimensions() int {
 
 // AddDimension will add another 'dimension' to the Grid
 // This can also be done by setting a value with a coordinate in the desired dimension
-func (g *InfinityGrid) AddDimension() int {
+func (g *InfinityGrid) AddDimension() {
 	minMax := newInfinityGridMinMax()
 	minMax.min = 0
 	minMax.max = 1
 	g.dimMinMax = append(g.dimMinMax, minMax)
-
-	return len(g.dimMinMax)
 }
 
 // Set .
@@ -158,6 +156,11 @@ func (g *InfinityGrid) Set(val string, x, y int, dims ...int) {
 // Get .
 func (g *InfinityGrid) Get(x, y int, dims ...int) string {
 	if !g.initialized {
+		return g.def
+	}
+
+	// If the x,y coord is outside current extents return default value
+	if x < g.xMinMax.min || x > g.xMinMax.max || y < g.yMinMax.min || y > g.yMinMax.max {
 		return g.def
 	}
 
@@ -313,4 +316,13 @@ func (g *InfinityGrid) LockBounds() {
 // UnlockBounds unlocks the bounds of the grid
 func (g *InfinityGrid) UnlockBounds() {
 	g.BoundsLocked = false
+}
+
+// SetExtents Sets the max extents for a 2d grid to the specified values
+// extents are also increased automatically when using Set
+func (g *InfinityGrid) SetExtents(minX, minY, maxX, maxY int) {
+	g.xMinMax.min = minX
+	g.xMinMax.max = maxX
+	g.yMinMax.min = minY
+	g.yMinMax.max = maxY
 }
