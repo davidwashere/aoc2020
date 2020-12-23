@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"strings"
 )
 
 // InfinityGrid grid with infinite dimensions in all directions
@@ -30,6 +31,13 @@ type InfinityGrid struct {
 	// Setting values outside the bounds are ignored
 	// Getting values outside the bounds returns default value
 	BoundsLocked bool
+
+	// Flips will result in coordinate translations
+	flipH bool
+	flipV bool
+
+	// Rotating the grid results in coordinate translations
+	deg int
 }
 
 type infinityGridMinMax struct {
@@ -75,6 +83,24 @@ func NewInfinityGridFromFile(filename string, defaultValue string) *InfinityGrid
 	return grid
 }
 
+// NewInfinityGridFromSlice .
+func NewInfinityGridFromSlice(data []string, defaultValue string) *InfinityGrid {
+	grid := NewInfinityGrid(defaultValue)
+
+	x := 0
+	y := 0
+	for _, line := range data {
+		for _, char := range line {
+			grid.Set(string(char), x, y)
+			x++
+		}
+		y++
+		x = 0
+	}
+
+	return grid
+}
+
 func _createDimKey(dims ...int) string {
 	result := ""
 
@@ -115,8 +141,47 @@ func (g *InfinityGrid) AddDimension() {
 	g.dimMinMax = append(g.dimMinMax, minMax)
 }
 
+// applyRotateToCoords will manipulate coords x, y coords based on current rotation
+func (g *InfinityGrid) applyRotateToCoords(x, y int) (int, int) {
+	// rad := float64(g.deg) * (math.Pi / 180.0)
+
+	// ca := math.Cos(rad)
+	// sa := math.Sin(rad)
+	// tx := math.Round(ca*float64(x) - sa*float64(y))
+	// ty := math.Round(sa*float64(x) + ca*float64(y))
+
+	// x = int(tx)
+	// y = int(ty)
+
+	if g.deg == 0 {
+		return x, y
+
+	} else if g.deg == 90 || g.deg == -270 {
+		return y, g.xMinMax.max - x + g.xMinMax.min
+
+	} else if Abs(g.deg) == 180 {
+		return g.xMinMax.max - x + g.xMinMax.min, g.yMinMax.max - y + g.yMinMax.min
+
+	} else if g.deg == 270 || g.deg == -90 {
+		return g.yMinMax.max - y + g.yMinMax.min, x
+
+	}
+
+	return x, y
+}
+
 // Set .
 func (g *InfinityGrid) Set(val string, x, y int, dims ...int) {
+	x, y = g.applyRotateToCoords(x, y)
+
+	if g.flipH {
+		y = g.yMinMax.max - y + g.yMinMax.min
+	}
+
+	if g.flipV {
+		x = g.xMinMax.max - x + g.yMinMax.min
+	}
+
 	if !g.BoundsLocked {
 		g.xMinMax.min = Min(g.xMinMax.min, x)
 		g.xMinMax.max = Max(g.xMinMax.max, x)
@@ -159,6 +224,16 @@ func (g *InfinityGrid) Get(x, y int, dims ...int) string {
 		return g.def
 	}
 
+	x, y = g.applyRotateToCoords(x, y)
+
+	if g.flipH {
+		y = g.yMinMax.max - y + g.yMinMax.min
+	}
+
+	if g.flipV {
+		x = g.xMinMax.max - x + g.xMinMax.min
+	}
+
 	// If the x,y coord is outside current extents return default value
 	if x < g.xMinMax.min || x > g.xMinMax.max || y < g.yMinMax.min || y > g.yMinMax.max {
 		return g.def
@@ -180,6 +255,26 @@ func (g *InfinityGrid) Get(x, y int, dims ...int) string {
 	}
 
 	return data[dimKey][x][y]
+}
+
+// GetRow .
+func (g *InfinityGrid) GetRow(y int, dims ...int) []string {
+	var row []string
+	for x := g.xMinMax.min; x <= g.xMinMax.max; x++ {
+		row = append(row, g.Get(x, y, dims...))
+	}
+
+	return row
+}
+
+// GetCol .
+func (g *InfinityGrid) GetCol(x int, dims ...int) []string {
+	var col []string
+	for y := g.yMinMax.min; y <= g.yMinMax.max; y++ {
+		col = append(col, g.Get(x, y, dims...))
+	}
+
+	return col
 }
 
 // Width .
@@ -292,21 +387,40 @@ func (g *InfinityGrid) Grow(amt int) {
 	}
 }
 
-// func (g *InfinityGrid) GetMinX() int {
-// 	return g.xMinMax.min
-// }
+// Shrink will reduce the min, max of every grid and dimension by amt
+// Data previously set will remain in-tact such that if the grid is later
+// expanded the out of bounds data can be retrieved
+func (g *InfinityGrid) Shrink(amt int) {
+	g.xMinMax.min += amt
+	g.xMinMax.max -= amt
+	g.yMinMax.min += amt
+	g.yMinMax.max -= amt
 
-// func (g *InfinityGrid) GetMinY() int {
-// 	return g.yMinMax.min
-// }
+	for i := 0; i < len(g.dimMinMax); i++ {
+		g.dimMinMax[i].min += amt
+		g.dimMinMax[i].max -= amt
+	}
+}
 
-// func (g *InfinityGrid) GetMaxX() int {
-// 	return g.xMinMax.max
-// }
+// GetMinX .
+func (g *InfinityGrid) GetMinX() int {
+	return g.xMinMax.min
+}
 
-// func (g *InfinityGrid) GetMaxY() int {
-// 	return g.yMinMax.max
-// }
+// GetMinY .
+func (g *InfinityGrid) GetMinY() int {
+	return g.yMinMax.min
+}
+
+// GetMaxX .
+func (g *InfinityGrid) GetMaxX() int {
+	return g.xMinMax.max
+}
+
+// GetMaxY .
+func (g *InfinityGrid) GetMaxY() int {
+	return g.yMinMax.max
+}
 
 // LockBounds locks the bounds of the grid
 func (g *InfinityGrid) LockBounds() {
@@ -325,4 +439,75 @@ func (g *InfinityGrid) SetExtents(minX, minY, maxX, maxY int) {
 	g.xMinMax.max = maxX
 	g.yMinMax.min = minY
 	g.yMinMax.max = maxY
+}
+
+// Dump Prints out text representation of grid, assumes each values is a single character
+func (g *InfinityGrid) Dump(dims ...int) {
+	if !g.initialized {
+		fmt.Println("Grid Not Initialized")
+	}
+
+	for y := g.yMinMax.max; y >= g.yMinMax.min; y-- {
+		for x := g.xMinMax.min; x <= g.xMinMax.max; x++ {
+			val := g.Get(x, y, dims...)
+			if val == "" {
+				val = " "
+			}
+			fmt.Print(val)
+		}
+		fmt.Println()
+	}
+}
+
+// TopEdge .
+func (g *InfinityGrid) TopEdge(dims ...int) string {
+	return strings.Join(g.GetRow(g.yMinMax.max, dims...), "")
+}
+
+// BottomEdge .
+func (g *InfinityGrid) BottomEdge(dims ...int) string {
+	return strings.Join(g.GetRow(g.yMinMax.min, dims...), "")
+}
+
+// LeftEdge .
+func (g *InfinityGrid) LeftEdge(dims ...int) string {
+	return strings.Join(g.GetCol(g.xMinMax.min, dims...), "")
+}
+
+// RightEdge .
+func (g *InfinityGrid) RightEdge(dims ...int) string {
+	return strings.Join(g.GetCol(g.xMinMax.max, dims...), "")
+}
+
+// Edges returns all grid edges
+func (g *InfinityGrid) Edges(dims ...int) []string {
+	var edges []string
+	return append(edges, g.LeftEdge(), g.RightEdge(), g.TopEdge(), g.BottomEdge())
+}
+
+// EdgesFlipped returns all grid edges
+func (g *InfinityGrid) EdgesFlipped(dims ...int) []string {
+	var edges []string
+	g.FlipH()
+	g.FlipV()
+	edges = append(edges, g.LeftEdge(), g.RightEdge(), g.TopEdge(), g.BottomEdge())
+	g.FlipH()
+	g.FlipV()
+
+	return edges
+}
+
+// FlipH .
+func (g *InfinityGrid) FlipH() {
+	g.flipH = !g.flipH
+}
+
+// FlipV .
+func (g *InfinityGrid) FlipV() {
+	g.flipV = !g.flipV
+}
+
+// Rotate only rotates in increments of 90 are accepted
+func (g *InfinityGrid) Rotate(deg int) {
+	g.deg = (g.deg + deg) % 360
 }
